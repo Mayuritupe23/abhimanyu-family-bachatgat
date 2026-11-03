@@ -24,7 +24,10 @@ class Member(Document):
 		user.add_roles(*wanted)
 
 		user.reload()
-		user.update({"default_app": "nova_core", "default_workspace": "Gat"})
+		# one sidebar only: the app rail slides in on hover instead of taking a column
+		user.update({"default_app": "nova_core", "default_workspace": "Gat", "dock_mode": "Floating"})
+		if self.mobile:
+			user.mobile_no = self.mobile  # members sign in with their mobile number
 		if "System Manager" not in frappe.get_roles(user.name):
 			user.module_profile = MODULE_PROFILE
 		user.save(ignore_permissions=True)

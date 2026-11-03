@@ -299,9 +299,7 @@ app_logo_url = "/assets/nova_core/images/emblem.svg"
 app_include_css = "/assets/nova_core/css/gat_theme.css"
 app_include_js = [
 	"/assets/nova_core/js/redirect_home_to_workspace.js",
-	"/assets/nova_core/js/pwa.js",
 ]
-web_include_js = ["/assets/nova_core/js/pwa.js"]
 web_include_css = "/assets/nova_core/css/gat_theme.css"
 
 website_context = {
@@ -325,10 +323,6 @@ doc_events = {
 	"Workspace": {"validate": "nova_core.gat.lock_workspace", "on_trash": "nova_core.gat.lock_workspace"},
 }
 
-# short links for the phone app: /afbg opens the Gat home
-website_redirects = [
-	{"source": "/afbg", "target": "/desk/gat", "redirect_http_status": 302},
-	{"source": "/afbg/pay", "target": "/desk/monthly-payment/new", "redirect_http_status": 302},
-	{"source": "/afbg/sheet", "target": "/desk/gat-monthly", "redirect_http_status": 302},
-	{"source": "/afbg/passbook", "target": "/desk/query-report/Member Passbook", "redirect_http_status": 302},
-]
+# the AFBG phone app (frontend/, built into www/afbg.html) handles every path under /afbg
+website_route_rules = [{"from_route": "/afbg/<path:app_path>", "to_route": "afbg"}]
+after_request = ["nova_core.pwa.no_store"]

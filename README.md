@@ -27,7 +27,7 @@ A *bachat gat* is a savings group: every member saves a fixed amount each month,
   Both sheets copy as an image, ready to paste into the WhatsApp group.
 - **Member exit.** Settles a leaving member: all their savings, plus their share of the earnings for each completed group year, minus any loan they still owe.
 - **Dashboard.** Each member sees their own dues, loans and votes. Office bearers also see what needs attention and who has paid this month. There are trends for collection, savings and loans.
-- **Phone app (PWA).** Install it from the browser ("Install" banner, or *Add to Home Screen* on iPhone). It opens full screen with its own icon, has shortcuts for Pay now, Monthly Sheet and Passbook, and shows a friendly page when there is no internet. Money data is always loaded fresh, never from an old copy.
+- **Phone app at `/afbg`.** A separate mobile app (installable, "AFBG" on the home screen) for members: this month's hapta with the UPI QR and screenshot upload, khata, loans with voting, and an Approve tab for approvers. English and मराठी. The full desk stays at `/desk/gat`.
 - **Reports.** Member Passbook, Pending Dues and Group Balance (where every rupee is: cash, loans, expenses).
 
 ## Screenshots
@@ -96,6 +96,8 @@ Then, as Administrator:
 3. Tick **Can Approve Payments** for the people who check payments.
 
 ## Under the hood
+
+- The phone app is Vue 3 in `frontend/`. Build it with `cd frontend && npm install && npx vite build`; the output goes to `nova_core/public/frontend` and `nova_core/www/afbg.html`.
 
 - App name `nova_core`. One module with DocTypes Member, Monthly Payment, Loan, Loan Vote, Group Expense, Member Exit and Group Settings.
 - The dashboard and the Monthly Sheet are plain JavaScript with hand-drawn SVG charts, no chart library.

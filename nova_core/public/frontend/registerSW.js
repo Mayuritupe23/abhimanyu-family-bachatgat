@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/assets/nova_core/frontend/sw.js', { scope: '/assets/nova_core/frontend/' })})}
