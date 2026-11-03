@@ -27,6 +27,7 @@ A *bachat gat* is a savings group: every member saves a fixed amount each month,
   Both sheets copy as an image, ready to paste into the WhatsApp group.
 - **Member exit.** Settles a leaving member: all their savings, plus their share of the earnings for each completed group year, minus any loan they still owe.
 - **Dashboard.** Each member sees their own dues, loans and votes. Office bearers also see what needs attention and who has paid this month. There are trends for collection, savings and loans.
+- **Phone app (PWA).** Install it from the browser ("Install" banner, or *Add to Home Screen* on iPhone). It opens full screen with its own icon, has shortcuts for Pay now, Monthly Sheet and Passbook, and shows a friendly page when there is no internet. Money data is always loaded fresh, never from an old copy.
 - **Reports.** Member Passbook, Pending Dues and Group Balance (where every rupee is: cash, loans, expenses).
 
 ## Screenshots

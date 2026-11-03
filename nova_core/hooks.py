@@ -299,7 +299,9 @@ app_logo_url = "/assets/nova_core/images/emblem.svg"
 app_include_css = "/assets/nova_core/css/gat_theme.css"
 app_include_js = [
 	"/assets/nova_core/js/redirect_home_to_workspace.js",
+	"/assets/nova_core/js/pwa.js",
 ]
+web_include_js = ["/assets/nova_core/js/pwa.js"]
 web_include_css = "/assets/nova_core/css/gat_theme.css"
 
 website_context = {
