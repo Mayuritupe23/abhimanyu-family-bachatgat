@@ -4,9 +4,10 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
+from frappe.utils import cint
 
 
 class GroupSettings(Document):
 	def validate(self):
-		if not 1 <= self.due_day <= 28:
+		if not 1 <= cint(self.due_day) <= 28:
 			frappe.throw(_("Due Day must be between 1 and 28"))
