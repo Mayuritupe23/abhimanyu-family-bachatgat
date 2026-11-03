@@ -15,7 +15,7 @@
 	if (!document.querySelector('link[rel="manifest"]')) {
 		add("link", { rel: "manifest", href: "/api/method/nova_core.pwa.manifest" });
 		add("link", { rel: "apple-touch-icon", href: `${IMG}/apple-touch-icon.png` });
-		add("meta", { name: "apple-mobile-web-app-title", content: "Bachat Gat" });
+		add("meta", { name: "apple-mobile-web-app-title", content: "AFBG" });
 	}
 	document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute("content", "#15803d"));
 	if (!document.querySelector('meta[name="theme-color"]')) add("meta", { name: "theme-color", content: "#15803d" });
@@ -51,7 +51,7 @@
 		el.id = "gat-install";
 		el.innerHTML = `
 			<img src="${IMG}/icon-192.png" alt="">
-			<div class="txt"><b>${t("Install Bachat Gat app")}</b><span>${body}</span></div>
+			<div class="txt"><b>${t("Install AFBG app")}</b><span>${body}</span></div>
 			${action ? `<button class="go">${t("Install")}</button>` : ""}
 			<button class="later" aria-label="${t("Later")}">✕</button>`;
 		document.body.appendChild(el);

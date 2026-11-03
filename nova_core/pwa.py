@@ -17,8 +17,8 @@ IMG = "/assets/nova_core/images"
 def manifest():
 	data = {
 		"id": "/desk/gat",
-		"name": "Abhimanyu Bachat Gat",
-		"short_name": "Bachat Gat",
+		"name": "Abhimanyu Family Bachat Gat",
+		"short_name": "AFBG",
 		"description": "Family savings group: monthly hapta, loans, votes and reports",
 		"start_url": "/desk/gat?source=pwa",
 		"scope": "/",
