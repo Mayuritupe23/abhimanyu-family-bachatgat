@@ -324,3 +324,11 @@ fixtures = [{"doctype": "Custom HTML Block", "filters": [["name", "in", ["Gat Da
 doc_events = {
 	"Workspace": {"validate": "nova_core.gat.lock_workspace", "on_trash": "nova_core.gat.lock_workspace"},
 }
+
+# short links for the phone app: /afbg opens the Gat home
+website_redirects = [
+	{"source": "/afbg", "target": "/desk/gat", "redirect_http_status": 302},
+	{"source": "/afbg/pay", "target": "/desk/monthly-payment/new", "redirect_http_status": 302},
+	{"source": "/afbg/sheet", "target": "/desk/gat-monthly", "redirect_http_status": 302},
+	{"source": "/afbg/passbook", "target": "/desk/query-report/Member Passbook", "redirect_http_status": 302},
+]

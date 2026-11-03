@@ -16,11 +16,11 @@ IMG = "/assets/nova_core/images"
 @frappe.whitelist(allow_guest=True)
 def manifest():
 	data = {
-		"id": "/desk/gat",
+		"id": "/afbg",
 		"name": "Abhimanyu Family Bachat Gat",
 		"short_name": "AFBG",
 		"description": "Family savings group: monthly hapta, loans, votes and reports",
-		"start_url": "/desk/gat?source=pwa",
+		"start_url": "/afbg",
 		"scope": "/",
 		"display": "standalone",
 		"orientation": "portrait",
@@ -34,11 +34,11 @@ def manifest():
 			{"src": f"{IMG}/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"},
 		],
 		"shortcuts": [
-			{"name": "Pay now", "short_name": "Pay", "url": "/desk/monthly-payment/new",
+			{"name": "Pay now", "short_name": "Pay", "url": "/afbg/pay",
 				"icons": [{"src": f"{IMG}/icon-192.png", "sizes": "192x192"}]},
-			{"name": "Monthly Sheet", "short_name": "Sheet", "url": "/desk/gat-monthly",
+			{"name": "Monthly Sheet", "short_name": "Sheet", "url": "/afbg/sheet",
 				"icons": [{"src": f"{IMG}/icon-192.png", "sizes": "192x192"}]},
-			{"name": "My Passbook", "short_name": "Passbook", "url": "/desk/query-report/Member Passbook",
+			{"name": "My Passbook", "short_name": "Passbook", "url": "/afbg/passbook",
 				"icons": [{"src": f"{IMG}/icon-192.png", "sizes": "192x192"}]},
 		],
 	}
