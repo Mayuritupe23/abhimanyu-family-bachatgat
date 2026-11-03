@@ -1,0 +1,87 @@
+Gat,गट
+Member,सभासद
+Members,सभासद
+Member Name,सभासदाचे नाव
+Designation,पद
+Adhyaksh,अध्यक्ष
+Upadhyaksh,उपाध्यक्ष
+Sachiv,सचिव
+Sahsachiv,सहसचिव
+Khajinadar,खजिनदार
+Active,सक्रिय
+Left,सोडले
+Join Date,सामील दिनांक
+Mobile,मोबाईल
+Address,पत्ता
+Aadhaar No,आधार क्रमांक
+Nominee,वारस
+Nominee Name,वारसाचे नाव
+Nominee Relation,वारसाशी नाते
+Bank Account,बँक खाते
+Account No,खाते क्रमांक
+Group Settings,गट सेटिंग्ज
+Group Name,गटाचे नाव
+Group Start Date,गट सुरू दिनांक
+Monthly Saving,मासिक बचत
+Due Day,शेवटची तारीख
+Late Fine First Day,पहिल्या दिवसाचा दंड
+Late Fine Per Day,दररोज दंड
+Interest Rate (% per month),व्याज दर (% दरमहा)
+Loan Limit per Member,प्रति सभासद कर्ज मर्यादा
+Loan Tenure Months,कर्ज कालावधी (महिने)
+Office Bearer Approvals Required,आवश्यक पदाधिकारी मंजुरी
+Loan,कर्ज
+Amount,रक्कम
+Purpose,उद्देश
+Applied,अर्ज केला
+Approved,मंजूर
+Rejected,नामंजूर
+Closed,बंद
+Application Date,अर्ज दिनांक
+Disbursed On,वाटप दिनांक
+Close By,परतफेड शेवटची तारीख
+Outstanding Principal,बाकी मुद्दल
+Votes,मतदान
+Vote,मत
+Vote {0},मत {0}
+Yes,होय
+No,नाही
+Disburse,कर्ज वाटप
+Monthly Payment,मासिक हप्ता
+Month,महिना
+Payment Date,भरणा दिनांक
+UPI / UTR No,UPI / UTR क्रमांक
+Screenshot,स्क्रीनशॉट
+Loan Repayment,कर्ज परतफेड
+Saving,बचत
+Interest,व्याज
+Principal,मुद्दल
+Days Late,उशीर दिवस
+Fine,दंड
+Total,एकूण
+Group Expense,गट खर्च
+Description,तपशील
+Member Exit,सभासद बाहेर पडणे
+Exit Date,बाहेर पडण्याचा दिनांक
+Total Savings,एकूण बचत
+Earnings Share,नफ्याचा हिस्सा
+Loan Outstanding,बाकी कर्ज
+Payable,देय रक्कम
+Member Passbook,सभासद पासबुक
+Pending Dues,थकबाकी
+Group Balance,गट शिल्लक
+Fine Till Today,आजपर्यंतचा दंड
+Total Saving,एकूण बचत
+Total Paid,एकूण भरले
+Approve,मंजूर करा
+Reject,नामंजूर करा
+Decision,निर्णय
+"Votes: {0} Yes, {1} No. Mark loan as {2}?","मते: {0} होय, {1} नाही. कर्ज {2} करायचे?"
+Loan cannot be edited after applying,अर्ज केल्यानंतर कर्जात बदल करता येणार नाही
+A disbursed loan cannot be cancelled,वाटप झालेले कर्ज रद्द करता येणार नाही
+Draft,मसुदा
+Scan and pay to,स्कॅन करून पैसे पाठवा
+Pay in UPI app,UPI ॲपमध्ये पैसे भरा
+"After paying, attach the screenshot below and Save.","पैसे भरल्यानंतर खाली स्क्रीनशॉट जोडा आणि Save करा."
+Payment scanner not set yet (Group Settings).,पेमेंट स्कॅनर अजून सेट केलेला नाही (Group Settings).
+Amount,रक्कम

@@ -1,0 +1,32 @@
+{
+ "content": null,
+ "creation": "2026-11-03 15:23:43.422285",
+ "docstatus": 0,
+ "doctype": "Page",
+ "idx": 0,
+ "modified": "2026-11-03 15:23:43.422285",
+ "modified_by": "Administrator",
+ "module": "Nova Core",
+ "name": "gat-monthly",
+ "owner": "Administrator",
+ "page_name": "gat-monthly",
+ "roles": [
+  {
+   "role": "Gat Member"
+  },
+  {
+   "role": "Gat Office Bearer"
+  },
+  {
+   "role": "Khajinadar"
+  },
+  {
+   "role": "System Manager"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "Monthly Sheet"
+}

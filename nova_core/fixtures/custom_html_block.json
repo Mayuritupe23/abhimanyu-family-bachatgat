@@ -1,0 +1,13 @@
+[
+ {
+  "docstatus": 0,
+  "doctype": "Custom HTML Block",
+  "html": "",
+  "modified": "2026-11-03 15:04:28.028482",
+  "name": "Gat Dashboard",
+  "private": 0,
+  "roles": [],
+  "script": "// Rendered by public/js/gat_dashboard.bundle.js (kept in the app, not in this block).\nfrappe.require(\"gat_dashboard.bundle.js\", () => gat.dashboard.render(root_element));\n",
+  "style": null
+ }
+]

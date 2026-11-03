@@ -1,0 +1,23 @@
+{
+ "app": "nova_core",
+ "creation": "2026-11-03 14:50:03.350299",
+ "docstatus": 0,
+ "doctype": "Dock",
+ "idx": 0,
+ "items": [
+  {
+   "added": 0,
+   "hidden": 0,
+   "icon": "piggy-bank",
+   "link_to": "Gat",
+   "link_type": "Sidebar",
+   "title": "Gat"
+  }
+ ],
+ "modified": "2026-11-03 14:50:03.350299",
+ "modified_by": "Administrator",
+ "name": "nova_core",
+ "owner": "Administrator",
+ "standard": 1,
+ "user": ""
+}

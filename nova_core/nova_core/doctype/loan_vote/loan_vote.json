@@ -1,0 +1,71 @@
+{
+ "actions": [],
+ "allow_bulk_edit": 1,
+ "allow_rename": 1,
+ "creation": "2026-11-03 12:26:51.357669",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "member",
+  "member_name",
+  "is_office_bearer",
+  "vote",
+  "voted_on"
+ ],
+ "fields": [
+  {
+   "fieldname": "member",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Member",
+   "options": "Member",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "member.member_name",
+   "fieldname": "member_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Member Name",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_office_bearer",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Is Office Bearer"
+  },
+  {
+   "fieldname": "vote",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Vote",
+   "options": "Yes\nNo",
+   "reqd": 1
+  },
+  {
+   "fieldname": "voted_on",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Voted On"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-11-03 12:26:51.357669",
+ "modified_by": "Administrator",
+ "module": "Nova Core",
+ "name": "Loan Vote",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

@@ -1,0 +1,776 @@
+/* Abhimanyu Bachat Gat desk theme (ported from the JECO theme): green #15803d primary,
+   dark green #14532d, saffron #d97706 accent. */
+:root {
+	--brand-blue: #15803d;
+	--brand-blue-dark: #14532d;
+	--brand-blue-light: #ecfdf3;
+	--brand-blue-border: #bbf7d0;
+	--brand-accent: #b45309;
+	--brand-navbar: #15803d;
+
+	--primary: var(--brand-blue);
+	--primary-color: var(--brand-blue);
+	--brand-color: var(--brand-blue);
+	--btn-primary: var(--brand-blue);
+	--text-color-on-primary: #ffffff;
+
+	--bg-color: #f5faf6;
+	--fg-color: #ffffff;
+
+	--card-shadow: 0 1px 3px rgba(21, 128, 61, 0.08);
+	--btn-shadow: none;
+
+	--border-radius: 8px;
+	--border-radius-md: 10px;
+	--navbar-height: 56px;
+
+	--sidebar-width: 260px !important;
+}
+
+[data-theme="dark"] {
+	--brand-blue: #4ade80;
+	--primary: #4ade80;
+	--primary-color: #4ade80;
+	--brand-color: #4ade80;
+	--btn-primary: #4ade80;
+	--brand-blue-dark: #bbf7d0;
+	--brand-blue-light: #0f2a1a;
+	--brand-blue-border: #1f4d2e;
+	--brand-accent: #fbbf24;
+	--brand-navbar: #14532d;
+	--bg-color: #12161c;
+	--fg-color: #1b2029;
+}
+
+/* No classic .navbar in this Frappe version - .sidebar-header is the brand bar. */
+/* Sidebar width, forced on every element that reads it (load-order safe). */
+.body-sidebar-container.expanded .body-sidebar,
+.body-sidebar-container.expanded .body-sidebar-placeholder {
+	width: 260px !important;
+}
+.body-sidebar-container.expanded .overlay {
+	left: 260px !important;
+	width: calc(100vw - 260px) !important;
+}
+
+/* Sidebar rows wrap instead of truncating - scoped to expanded state only. */
+.body-sidebar-container.expanded .standard-sidebar-item {
+	overflow: visible !important;
+	height: auto !important;
+}
+
+.body-sidebar-container.expanded .standard-sidebar-item .item-anchor {
+	align-items: center !important;
+	overflow: visible !important;
+	height: auto !important;
+	min-height: 30px;
+	padding: 5px 10px !important;
+	gap: 8px !important;
+}
+
+.body-sidebar-container.expanded .standard-sidebar-item .sidebar-item-icon {
+	flex-shrink: 0;
+}
+
+.body-sidebar-container.expanded .standard-sidebar-item .sidebar-item-label {
+	white-space: normal !important;
+	overflow: visible !important;
+	text-overflow: unset !important;
+	word-wrap: break-word;
+	line-height: 1.3;
+}
+
+.standard-sidebar-item {
+	border-radius: 8px !important;
+}
+
+.standard-sidebar-item.selected {
+	border-left: 3px solid var(--btn-primary);
+	padding-left: 1px;
+}
+
+/* Sidebar section headers - brand color, fully opaque. */
+.standard-sidebar-item .section-break,
+.standard-sidebar-item .section-break .sidebar-item-label {
+	padding-top: 4px !important;
+	font-size: 11px;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	font-weight: 700 !important;
+	color: var(--brand-blue) !important;
+	opacity: 1 !important;
+}
+
+/* Same for collapsible group headers - kept separate: :has() in a joined
+   selector list drops the whole rule on unsupported browsers. */
+.standard-sidebar-item .item-anchor:has(.drop-icon) {
+	padding-top: 4px !important;
+	font-size: 11px;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	font-weight: 700 !important;
+	color: var(--brand-blue) !important;
+	opacity: 1 !important;
+}
+.standard-sidebar-item .item-anchor:has(.drop-icon) .sidebar-item-label {
+	font-weight: 700 !important;
+	color: var(--brand-blue) !important;
+}
+.standard-sidebar-item .item-anchor:has(.drop-icon) svg {
+	stroke: var(--brand-blue) !important;
+}
+
+/* Shortcut and card link titles show in full on one line - no "..." cut and no wrapping.
+   Frappe wraps the title in an .ellipsis span, so that is reset too. Count pills hold only
+   a number, which leaves room for the full title. */
+.shortcut-widget-box .widget-head {
+	flex-wrap: nowrap !important;
+	min-width: 0;
+}
+.shortcut-widget-box .widget-label .widget-title,
+.shortcut-widget-box .widget-label .widget-title .ellipsis,
+.links-widget-box .link-content.ellipsis,
+.links-widget-box .link-item.ellipsis {
+	white-space: nowrap !important;
+	overflow: visible !important;
+	text-overflow: clip !important;
+	line-height: 1.3;
+}
+.shortcut-widget-box .widget-control .indicator-pill {
+	white-space: nowrap !important;
+}
+.shortcut-widget-box .widget-label {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+.shortcut-widget-box .widget-control {
+	flex-shrink: 0;
+}
+
+.shortcut-widget-box .indicator-pill {
+	overflow: visible !important;
+	text-overflow: unset !important;
+}
+
+.shortcut-widget-box {
+	border-radius: 10px !important;
+	transition: all 0.2s ease !important;
+}
+
+/* Shortcut description - one line, ellipsis-truncated. */
+.shortcut-widget-box .widget-subtitle {
+	font-size: 11px !important;
+	white-space: nowrap !important;
+	overflow: hidden !important;
+	text-overflow: ellipsis !important;
+	min-width: 0;
+}
+.shortcut-widget-box .widget-label {
+	min-width: 0;
+}
+
+.links-widget-box .link-description {
+	color: var(--text-muted);
+}
+
+/* Hover - light tint, not solid (solid is reserved for active state). */
+.shortcut-widget-box:hover {
+	background-color: var(--brand-blue-light) !important;
+	transform: translateY(-2px) !important;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Plain neutral border - color now carried by the icon badge instead. */
+.shortcut-widget-box {
+	border-left: 1px solid var(--border-color) !important;
+}
+
+/* Icon badge (added by shortcut_widget.js's set_shortcut_icon()). */
+/* Grid, not flex, so the icon spans both title+subtitle rows. */
+.shortcut-widget-box .widget-label {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	column-gap: 10px;
+	align-items: center;
+}
+.shortcut-widget-box .widget-label .shortcut-icon-badge {
+	grid-row: 1 / 3;
+	grid-column: 1;
+}
+.shortcut-widget-box .widget-label .widget-title {
+	grid-column: 2;
+	grid-row: 1;
+}
+.shortcut-widget-box .widget-label .widget-subtitle {
+	grid-column: 2;
+	grid-row: 2;
+}
+/* Not scoped to .shortcut-widget-box: the workspace edit mode renders the tile without
+   that class, and the badge must keep its size there too. */
+.shortcut-icon-badge {
+	flex-shrink: 0;
+	width: 32px;
+	height: 32px;
+	border-radius: 8px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.shortcut-icon-badge svg {
+	width: 16px;
+	height: 16px;
+}
+.shortcut-icon-badge.blue {
+	background: rgba(37, 99, 235, 0.12);
+}
+.shortcut-icon-badge.blue svg {
+	stroke: #2563eb;
+}
+.shortcut-icon-badge.green {
+	background: rgba(22, 163, 74, 0.12);
+}
+.shortcut-icon-badge.green svg {
+	stroke: #16a34a;
+}
+.shortcut-icon-badge.orange {
+	background: rgba(234, 88, 12, 0.12);
+}
+.shortcut-icon-badge.orange svg {
+	stroke: #ea580c;
+}
+.shortcut-icon-badge.red {
+	background: rgba(220, 38, 38, 0.12);
+}
+.shortcut-icon-badge.red svg {
+	stroke: #dc2626;
+}
+.shortcut-icon-badge.yellow {
+	background: rgba(202, 138, 4, 0.12);
+}
+.shortcut-icon-badge.yellow svg {
+	stroke: #ca8a04;
+}
+.shortcut-icon-badge.pink {
+	background: rgba(219, 39, 119, 0.12);
+}
+.shortcut-icon-badge.pink svg {
+	stroke: #db2777;
+}
+.shortcut-icon-badge.cyan {
+	background: rgba(8, 145, 178, 0.12);
+}
+.shortcut-icon-badge.cyan svg {
+	stroke: #0891b2;
+}
+.shortcut-icon-badge.gray {
+	background: rgba(107, 114, 128, 0.12);
+}
+.shortcut-icon-badge.gray svg {
+	stroke: #6b7280;
+}
+
+/* Links widget cards - colorful headers */
+.links-widget-box .widget-head .widget-label .widget-title {
+	font-weight: 600 !important;
+}
+
+/* Workspace page padding */
+.page-container .page-body {
+	padding: 16px !important;
+}
+
+/* ============================================================
+   Buttons - brand blue, gradient fill, lift on hover, press on click
+   ============================================================ */
+.btn-primary,
+.btn.btn-primary {
+	background: linear-gradient(135deg, #15803d 0%, #14532d 100%) !important;
+	/* The gradient above was applied without ever setting a text color to go
+     with it - "Submit Salary Slip" and every other primary action button
+     inherited whatever color happened to cascade in, unreadable against this
+     background at some sites. */
+	color: var(--text-color-on-primary) !important;
+	border: none !important;
+	box-shadow: 0 2px 6px rgba(21, 128, 61, 0.35) !important;
+	transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease !important;
+}
+.btn-primary:hover,
+.btn.btn-primary:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 6px 16px rgba(21, 128, 61, 0.45) !important;
+	filter: brightness(1.05);
+}
+.btn-primary:active,
+.btn.btn-primary:active {
+	transform: translateY(0);
+	box-shadow: 0 2px 6px rgba(21, 128, 61, 0.3) !important;
+}
+.btn {
+	border-radius: 8px !important;
+	transition: transform 0.12s ease, box-shadow 0.12s ease !important;
+}
+.btn-default:hover,
+.btn-secondary:hover {
+	transform: translateY(-1px);
+}
+
+/* Secondary/toolbar buttons - visible brand border instead of default gray. */
+.btn-default,
+.btn-secondary {
+	background-color: var(--brand-blue-light) !important;
+	border: 1px solid var(--brand-blue-border) !important;
+	color: var(--brand-blue-dark) !important;
+}
+.btn-default:hover,
+.btn-secondary:hover {
+	background-color: #d1fae5 !important;
+	border-color: var(--brand-blue) !important;
+}
+.btn-default svg,
+.btn-secondary svg,
+.btn-default .icon,
+.btn-secondary .icon {
+	stroke: var(--brand-blue-dark) !important;
+}
+
+/* Input-group-attached buttons stay flush/borderless (no L-shaped gap). */
+.input-group .btn-default,
+.input-group-btn .btn-default,
+.input-group .btn-secondary,
+.input-group-btn .btn-secondary {
+	background-color: transparent !important;
+	border: 1px solid var(--border-color) !important;
+	border-left: none !important;
+	border-radius: 0 var(--border-radius) var(--border-radius) 0 !important;
+	color: var(--text-muted) !important;
+}
+.input-group .btn-default svg,
+.input-group-btn .btn-default svg,
+.input-group .btn-secondary svg,
+.input-group-btn .btn-secondary svg {
+	stroke: var(--text-muted) !important;
+}
+
+/* Status pills - "blue" variant picks up the brand tint instead. */
+.indicator-pill.blue,
+.indicator.blue {
+	background-color: var(--brand-blue-light) !important;
+	color: var(--brand-blue-dark) !important;
+}
+
+/* ============================================================
+   Sidebar header (the real "brand bar" in this version) - depth +
+   a hover state on its dropdown button.
+   ============================================================ */
+
+/* ============================================================
+   Sidebar - accented active state, smoother hover, icon color shift
+   ============================================================ */
+.standard-sidebar-item .item-anchor {
+	transition: background-color 0.15s ease, color 0.15s ease, padding-left 0.15s ease !important;
+}
+.body-sidebar-container.expanded .standard-sidebar-item:not(.active-sidebar):hover .item-anchor {
+	padding-left: 13px !important;
+}
+/* Active sidebar item - light tint, not solid (avoids clashing with header). */
+.standard-sidebar-item.active-sidebar,
+.active-sidebar {
+	background: var(--brand-blue-light) !important;
+	border-left: 3px solid var(--brand-blue) !important;
+}
+.active-sidebar .item-anchor {
+	color: var(--brand-blue-dark) !important;
+	font-weight: 600 !important;
+}
+.body-sidebar-container.expanded .active-sidebar .item-anchor {
+	padding-left: 8px !important;
+}
+.active-sidebar .sidebar-item-icon svg {
+	stroke: var(--brand-blue-dark) !important;
+}
+.body-sidebar .sidebar-toggle-btn {
+	transition: transform 0.2s ease, background-color 0.15s ease !important;
+}
+.body-sidebar .sidebar-toggle-btn:hover {
+	transform: scale(1.1);
+}
+
+/* Sidebar scrollbar - slim + brand-tinted, only visible on hover */
+.body-sidebar-top {
+	scrollbar-width: thin;
+	scrollbar-color: transparent transparent;
+}
+.body-sidebar-top:hover {
+	scrollbar-color: rgba(21, 128, 61, 0.35) transparent;
+}
+.body-sidebar-top::-webkit-scrollbar {
+	width: 5px;
+}
+.body-sidebar-top::-webkit-scrollbar-thumb {
+	background: transparent;
+	border-radius: 10px;
+}
+.body-sidebar-top:hover::-webkit-scrollbar-thumb {
+	background: rgba(21, 128, 61, 0.35);
+}
+
+/* ============================================================
+   Form fields - crisp focus ring in brand blue, rounder inputs
+   ============================================================ */
+/* Filled light-gray box instead of a border line, matching the reference theme.
+   Not for checkboxes / radios: Frappe gives them .input-with-feedback too, and the gray
+   fill with no border made them look read-only. They keep the core style. */
+.form-control:not([type="checkbox"]):not([type="radio"]),
+.input-with-feedback:not([type="checkbox"]):not([type="radio"]),
+select.form-control,
+textarea.form-control {
+	background-color: #eef1f4 !important;
+	border: 1px solid transparent !important;
+	border-radius: 8px !important;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+.form-control:focus,
+select.form-control:focus,
+.like-disabled-input:focus,
+textarea.form-control:focus {
+	border-color: var(--brand-blue) !important;
+	box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.15) !important;
+}
+
+/* Links stay body-text black, not blue - matches reference theme. */
+a,
+a:hover,
+.text-primary,
+.grid-row a,
+.list-row-col a,
+.ellipsis a {
+	color: var(--text-color) !important;
+}
+/* Core theme makes labels var(--text-muted) (faded gray) - hard to spot at a glance. */
+.control-label {
+	color: var(--text-color) !important;
+	font-weight: 600 !important;
+}
+.frappe-control.has-error .form-control {
+	box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12) !important;
+}
+.checkbox-input:checked,
+input[type="checkbox"]:checked {
+	accent-color: var(--brand-blue);
+}
+
+/* ============================================================
+   Cards / widgets - soft lift and rounder corners across the board
+   ============================================================ */
+.widget,
+.widget-group,
+.form-dashboard-section .dashboard-section-body,
+.form-page .frappe-card {
+	border-radius: 10px !important;
+	transition: box-shadow 0.2s ease, transform 0.2s ease !important;
+}
+.links-widget-box:hover,
+.number-widget-box:hover,
+.chart-widget-box:hover {
+	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Page head title accent */
+.page-head .title-text,
+.page-head .indicator-title {
+	font-weight: 650 !important;
+}
+
+/* Indicator pills - slightly bolder + rounder */
+.indicator-pill {
+	border-radius: 999px !important;
+	font-weight: 600 !important;
+}
+
+/* App-wide brand accent pass - list/form/report views. */
+
+/* Filter bar sits above the list rows.
+   Frappe makes .level-right sticky (frappe/public/scss/desk/list.scss:155) so
+   the right-hand columns hold their place on horizontal scroll, and the header
+   row sticky with z-index 2 (same file, line 11). Both are positioned, so the
+   sort/filter dropdowns that open downward from .page-form end up competing
+   with them and can paint underneath - the row's timestamp and comment icons
+   show through the open menu. Raising a single dropdown's own z-index does not
+   settle it; lifting the whole filter bar into its own layer does, and does it
+   once rather than per dropdown. The layer must stay below the sticky page head
+   (z-index 6, frappe/public/scss/desk/page.scss), or the head's menus (List View,
+   Saved Filters, ...) open underneath the filter bar. 5 matches report.scss. */
+.page-form {
+	position: relative !important;
+	z-index: 5 !important;
+}
+
+/* List view - lift results table into a white card above the tinted canvas. */
+.frappe-list .result {
+	background-color: #ffffff !important;
+	border-radius: 10px !important;
+	box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06) !important;
+	overflow: hidden;
+}
+.list-row-container {
+	border-bottom: 1px solid rgba(16, 24, 40, 0.06) !important;
+	transition: background-color 0.12s ease !important;
+}
+.list-row-container:hover {
+	background-color: var(--brand-blue-light) !important;
+}
+.list-row-container.list-row-head {
+	background-color: var(--brand-blue-light) !important;
+	border-radius: var(--border-radius-md) var(--border-radius-md) 0 0 !important;
+	font-weight: 600 !important;
+	color: var(--brand-blue-dark) !important;
+}
+/* Selected rows (checkbox ticked) - solid tint + accent bar, exact match */
+.list-row-container:has(.list-row-checkbox:checked) {
+	background-color: var(--brand-blue-light) !important;
+	box-shadow: inset 3px 0 0 var(--brand-blue) !important;
+}
+
+/* Form view - tabs, section heads, tables all get the accent */
+.form-tabs .nav-link.active,
+.form-tab-link.active {
+	color: var(--brand-blue) !important;
+	border-bottom: 2px solid var(--brand-blue) !important;
+}
+.form-section .section-head,
+.form-dashboard-section .section-head {
+	color: var(--brand-blue-dark) !important;
+	font-weight: 650 !important;
+}
+.grid-heading-row,
+.form-grid .grid-heading-row {
+	background-color: rgba(21, 128, 61, 0.05) !important;
+}
+.form-grid .data-row.row-hover:hover,
+.form-grid .data-row:hover {
+	background-color: rgba(21, 128, 61, 0.03) !important;
+}
+
+/* Report/table view - subtle header tint, hover tint on rows */
+.dt-scrollable .dt-row:hover,
+.report-grid .dt-row:hover {
+	background-color: rgba(21, 128, 61, 0.04) !important;
+}
+.dt-header,
+.dt-header .dt-cell--header {
+	background-color: rgba(21, 128, 61, 0.05) !important;
+}
+
+/* Modals/dialogs - a thin brand-colored top border for a bit of polish. No overflow: hidden
+   here: it clips Link-field suggestions and dropdowns that open past the dialog's edge. */
+.modal-content {
+	border-radius: 10px !important;
+	border-top: 3px solid var(--brand-accent) !important;
+}
+
+/* Timeline / comments - accent dot instead of default gray */
+.timeline-dot {
+	background-color: var(--brand-accent) !important;
+}
+
+/* Breadcrumbs - accent on hover, matches sidebar active color */
+.breadcrumb-container a:hover {
+	color: var(--brand-blue) !important;
+}
+
+/* Tags/filters - a touch of brand color when active */
+.filter-action.active,
+.tag-pill.active {
+	background-color: rgba(21, 128, 61, 0.1) !important;
+	color: var(--brand-blue) !important;
+}
+
+/* Breadcrumb bar (home icon / "Gat" / ... menu) - a light green
+   tint rather than a solid fill, so it reads as "branded" without adding
+   another bold, competing block of solid color on the page. */
+.page-head {
+	background: var(--brand-blue-light) !important;
+}
+.page-head .breadcrumb-container a,
+.page-head .breadcrumb-container .breadcrumb-item {
+	color: var(--brand-blue-dark) !important;
+}
+.page-head .breadcrumb-container a:hover {
+	color: var(--brand-blue) !important;
+}
+.page-head .breadcrumb-container svg,
+.page-head .octicon-chevron-right,
+.page-head .breadcrumb-container .icon {
+	stroke: var(--brand-blue-dark) !important;
+}
+
+/* Keep the shortcut title and the count / arrow apart; the count never shrinks. */
+.shortcut-widget-box .widget-head {
+	gap: 12px;
+}
+.shortcut-widget-box .widget-control {
+	flex: none !important;
+}
+
+/* Short caption under the shortcut title (added by workspace_shortcuts.js). Same size as
+   the card link descriptions; wraps only on very narrow screens, never under the count. */
+.gat-shortcut-desc {
+	grid-column: 2;
+	grid-row: 2;
+	margin-top: 2px;
+	font-size: 11px;
+	line-height: 1.3;
+	color: var(--text-muted);
+}
+
+/* Workspace header: Gat logo, centred. */
+.gat-ws-brand {
+	display: flex;
+	justify-content: center;
+	width: 100%;
+}
+.gat-ws-brand img {
+	height: 44px;
+}
+
+/* Dark mode: the light fills above are fixed colours (they would show white boxes with
+   white text), so dark mode gets the theme's own dark ones. */
+[data-theme="dark"] .form-control:not([type="checkbox"]):not([type="radio"]),
+[data-theme="dark"] .input-with-feedback:not([type="checkbox"]):not([type="radio"]),
+[data-theme="dark"] select.form-control,
+[data-theme="dark"] textarea.form-control {
+	background-color: var(--control-bg) !important;
+}
+[data-theme="dark"] .btn-default:hover,
+[data-theme="dark"] .btn-secondary:hover {
+	background-color: var(--brand-blue-border) !important;
+}
+[data-theme="dark"] .frappe-list .result {
+	background-color: var(--fg-color) !important;
+}
+
+/* Login page: sign-in card in the middle of a soft brand-blue background.
+   CSS only, so Frappe's login form and its JS stay untouched. */
+body[data-path="login"] {
+	min-height: 100vh;
+	/* Saffron glow over a brand-green gradient so the card stays readable. */
+	background:
+		linear-gradient(160deg, rgba(21, 128, 61, 0.55), rgba(20, 83, 45, 0.75)),
+		radial-gradient(circle at 20% 20%, rgba(251, 191, 36, 0.35), transparent 45%),
+		#14532d;
+}
+#page-login .page-content-wrapper {
+	padding-top: 0;
+}
+#page-login main.container {
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 32px 16px;
+}
+#page-login main.container::after {
+	content: "अभिमन्यू बचत गट · Abhimanyu Bachat Gat";
+	margin-top: 20px;
+	font-size: 12px;
+	color: #fff;
+	opacity: 0.85;
+}
+#page-login .page_content {
+	width: 100%;
+}
+#page-login .page-card {
+	max-width: 400px;
+	min-height: 0;
+	height: auto;
+	margin: 0 auto;
+	padding: 36px 32px 28px;
+	background: rgba(255, 255, 255, 0.82);
+	backdrop-filter: blur(14px);
+	-webkit-backdrop-filter: blur(14px);
+	border: 1px solid rgba(255, 255, 255, 0.7);
+	border-top: 4px solid var(--brand-blue);
+	border-radius: 14px;
+	box-shadow: 0 12px 40px rgba(20, 83, 45, 0.12);
+}
+/* Show the Gat logo on the login card. */
+#page-login .app-logo {
+	content: url("/assets/nova_core/images/logo.svg");
+	width: auto;
+	height: 52px;
+	max-height: none;
+	margin: 0 auto 20px;
+}
+#page-login .page-card-head {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+}
+#page-login .page-card-head h4 {
+	font-size: 22px;
+	font-weight: 700;
+	color: var(--brand-blue-dark);
+}
+#page-login .form-control {
+	height: 40px;
+	border-radius: 8px;
+}
+#page-login .form-control:focus {
+	box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.18) !important;
+}
+#page-login .forgot-password-message a {
+	color: var(--brand-blue) !important;
+}
+#page-login .page-card-actions .btn {
+	height: 40px;
+	border-radius: 8px;
+	font-weight: 600;
+}
+#page-login .btn-login,
+#page-login .btn-forgot,
+#page-login .btn-primary {
+	background: var(--brand-blue) !important;
+	border-color: var(--brand-blue) !important;
+	color: #fff !important;
+}
+#page-login .btn-login:hover,
+#page-login .btn-forgot:hover,
+#page-login .btn-primary:hover {
+	background: var(--brand-blue-dark) !important;
+	border-color: var(--brand-blue-dark) !important;
+}
+#page-login .btn-login-option {
+	background: transparent !important;
+	border: 1px solid var(--brand-blue-border) !important;
+	color: var(--brand-blue-dark) !important;
+}
+
+/* ===== Gat additions ===== */
+.gat-ws-brand {
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+	padding: 6px 0 2px;
+}
+.gat-ws-brand .gat-ws-tagline {
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--brand-accent);
+	letter-spacing: 0.3px;
+}
+[data-theme="dark"] .gat-ws-brand img {
+	content: url("/assets/nova_core/images/logo_light.svg");
+}
+.body-sidebar .sidebar-header img,
+.body-sidebar .app-logo {
+	border-radius: 8px;
+}
+
+/* Workspace is locked: no Edit / New / Manage menu for anyone. */
+[id="page-Workspaces"] .page-icon-group,
+[id="page-Workspaces"] .btn-edit-workspace,
+[id="page-Workspaces"] .btn-new-workspace {
+	display: none !important;
+}

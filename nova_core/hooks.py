@@ -277,3 +277,48 @@ app_license = "mit"
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
 
+
+after_install = "nova_core.gat.ensure_roles"
+after_migrate = "nova_core.gat.ensure_roles"
+
+permission_query_conditions = {
+	"Member": "nova_core.gat.member_pqc",
+	"Monthly Payment": "nova_core.gat.monthly_payment_pqc",
+	"Member Exit": "nova_core.gat.member_exit_pqc",
+}
+
+has_permission = {
+	"Member": "nova_core.gat.has_member_permission",
+	"Monthly Payment": "nova_core.gat.has_member_permission",
+	"Member Exit": "nova_core.gat.has_member_permission",
+	"Loan": "nova_core.gat.has_loan_permission",
+}
+
+app_logo_url = "/assets/nova_core/images/emblem.svg"
+
+app_include_css = "/assets/nova_core/css/gat_theme.css"
+app_include_js = [
+	"/assets/nova_core/js/redirect_home_to_workspace.js",
+]
+web_include_css = "/assets/nova_core/css/gat_theme.css"
+
+website_context = {
+	"favicon": "/assets/nova_core/images/emblem.svg",
+	"splash_image": "/assets/nova_core/images/emblem.svg",
+}
+
+add_to_apps_screen = [
+	{
+		"name": "nova_core",
+		"logo": "/assets/nova_core/images/emblem.svg",
+		"title": "Abhimanyu Bachat Gat",
+		"route": "/desk/gat",
+		"sequence_id": 1,
+	}
+]
+
+fixtures = [{"doctype": "Custom HTML Block", "filters": [["name", "in", ["Gat Dashboard"]]]}]
+
+doc_events = {
+	"Workspace": {"validate": "nova_core.gat.lock_workspace", "on_trash": "nova_core.gat.lock_workspace"},
+}
