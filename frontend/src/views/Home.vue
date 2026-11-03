@@ -34,6 +34,7 @@ const toVote = computed(() => d.value?.me?.to_vote?.length || 0);
 
     <template v-if="d">
       <p class="hello">{{ greeting }}, <b>{{ firstName }}</b> 🙏</p>
+      <div class="sec"><h2>{{ t('My account') }}</h2></div>
 
       <!-- this month -->
       <section class="hero">
@@ -57,9 +58,17 @@ const toVote = computed(() => d.value?.me?.to_vote?.length || 0);
         <router-link v-else to="/khata" class="pay ghost">{{ tm?.status === 'Paid' ? t('View receipt') : t('Waiting for approval') }}</router-link>
       </section>
 
-      <!-- approver / voter nudges -->
-      <router-link v-if="toApprove" to="/approve" class="nudge orange">
-        <Icon name="check" /><span class="grow"><b>{{ toApprove }}</b> {{ t('Needs your approval') }}</span>→
+      <!-- approvers: the group's work lives on its own tab, not mixed with their own account -->
+      <router-link v-if="d.admin && store.boot?.can_approve" to="/gat" class="tracker">
+        <div class="ic"><Icon name="users" /></div>
+        <div class="grow">
+          <b>{{ t('Gat tracker') }}</b>
+          <div class="small">
+            <span :class="{ hot: toApprove }">{{ toApprove }} {{ t('to check') }}</span> ·
+            {{ d.admin.unpaid.length }} {{ t('not paid') }}
+          </div>
+        </div>
+        →
       </router-link>
       <router-link v-if="toVote" to="/loans" class="nudge blue">
         <Icon name="thumbs" /><span class="grow"><b>{{ toVote }}</b> {{ t('Loan requests') }} · {{ t('Vote') }}</span>→
@@ -108,6 +117,11 @@ const toVote = computed(() => d.value?.me?.to_vote?.length || 0);
 .nudge { display: flex; align-items: center; gap: 10px; padding: 13px 14px; border-radius: 16px; font-size: 14px; font-weight: 600; }
 .nudge.orange { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
 .nudge.blue { background: #f0f9ff; color: #075985; border: 1px solid #bae6fd; }
+.tracker { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 18px; background: #0f172a; color: #fff; font-weight: 600; }
+.tracker .ic { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; background: rgba(255,255,255,.12); }
+.tracker b { font-size: 15px; }
+.tracker .small { opacity: .8; margin-top: 2px; }
+.tracker .hot { color: #fbbf24; font-weight: 800; }
 .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .mini { display: flex; flex-direction: column; gap: 4px; }
 .mini b { font-size: 21px; font-weight: 800; } .g { color: var(--g2); } .o { color: #c2410c; }

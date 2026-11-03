@@ -12,7 +12,7 @@ const tabs = computed(() => [
   { to: '/', name: 'home', icon: 'home', label: 'Home' },
   { to: '/khata', name: 'khata', icon: 'book', label: 'Khata' },
   { to: '/loans', name: 'loans', icon: 'coins', label: 'Loans' },
-  ...(store.boot?.can_approve ? [{ to: '/approve', name: 'approve', icon: 'check', label: 'Approve' }] : []),
+  ...(store.boot?.can_approve ? [{ to: '/gat', name: 'gat', icon: 'users', label: 'Gat' }] : []),
   { to: '/me', name: 'me', icon: 'user', label: 'Me' },
 ]);
 const showChrome = computed(() => route.name && route.name !== 'login');

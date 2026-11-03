@@ -136,7 +136,7 @@ def approve(payment):
 	from nova_core.monthly import approve_row
 
 	approve_row(payment)
-	return approvals()
+	return True
 
 
 @frappe.whitelist()
@@ -147,7 +147,7 @@ def reject(payment):
 	if doc.docstatus != 0:
 		frappe.throw(_("Only payments waiting for approval can be sent back"))
 	frappe.delete_doc("Monthly Payment", payment, ignore_permissions=True)
-	return approvals()
+	return True
 
 
 @frappe.whitelist()
@@ -156,3 +156,28 @@ def set_language(lang):
 		frappe.throw(_("Unknown language"))
 	frappe.db.set_value("User", frappe.session.user, "language", lang)
 	return lang
+
+
+@frappe.whitelist()
+def gat_month(month=None):
+	"""Approver's tracker: every member's state for the month, with what to collect or check."""
+	frappe.only_for(APPROVER_ROLES)
+	from nova_core.monthly import get_sheet
+
+	sheet = get_sheet(month or today())
+	mobiles = dict(frappe.get_all("Member", fields=["name", "mobile"], as_list=True))
+	for r in sheet["rows"]:
+		r["mobile"] = mobiles.get(r["member"])
+		# what a pending member owes today (fine counted till today)
+		if r["state"] == "pending":
+			r["due"] = flt(r["saving"]) + flt(r["interest"])
+	return sheet
+
+
+@frappe.whitelist()
+def record_cash(member, month, emi=0):
+	"""Approver records a cash payment handed over in person; it is approved at once."""
+	from nova_core.monthly import save_row
+
+	save_row(member, month, emi=emi, payment_date=today(), payment_mode="Cash")
+	return gat_month(month)

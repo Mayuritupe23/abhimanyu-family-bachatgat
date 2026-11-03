@@ -7,7 +7,8 @@ const routes = [
   { path: '/pay', name: 'pay', component: () => import('./views/Pay.vue'), meta: { title: 'Pay Hapta', back: true } },
   { path: '/khata', name: 'khata', component: () => import('./views/Khata.vue'), meta: { title: 'My Khata' } },
   { path: '/loans', name: 'loans', component: () => import('./views/Loans.vue'), meta: { title: 'Loans' } },
-  { path: '/approve', name: 'approve', component: () => import('./views/Approve.vue'), meta: { title: 'Approve', approver: true } },
+  { path: '/gat', name: 'gat', component: () => import('./views/Gat.vue'), meta: { title: 'Gat Tracker', approver: true } },
+  { path: '/approve', redirect: '/gat' },
   { path: '/me', name: 'me', component: () => import('./views/Me.vue'), meta: { title: 'Me' } },
   { path: '/:rest(.*)*', redirect: '/' },
 ];

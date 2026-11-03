@@ -3,7 +3,9 @@ import { ref } from 'vue';
 export const lang = ref('en');
 
 const MR = {
-  Home: 'होम', Khata: 'खाते', Loans: 'कर्ज', Approve: 'मंजुरी', Me: 'मी',
+  Home: 'होम', Khata: 'खाते', Loans: 'कर्ज', Approve: 'मंजूर करा', Me: 'मी', Gat: 'गट', 'Gat Tracker': 'गट ट्रॅकर',
+  'To check': 'तपासायचे', 'Not paid': 'न भरलेले', Collected: 'जमा झाले', 'Cash received': 'रोख मिळाले', 'Everyone has paid': 'सर्वांनी भरले',
+  'My account': 'माझे खाते', 'Gat tracker': 'गट ट्रॅकर', 'to check': 'तपासायचे', 'not paid': 'न भरलेले',
   'Good morning': 'सुप्रभात', 'Good afternoon': 'नमस्कार', 'Good evening': 'शुभ संध्या',
   'This month': 'या महिन्यात', 'Last date': 'शेवटची तारीख', 'days left': 'दिवस बाकी', 'Today is the last date': 'आज शेवटची तारीख',
   'Fine is running': 'दंड सुरू आहे', Paid: 'भरले', Due: 'बाकी', Sent: 'पाठवले', Late: 'उशीर',
