@@ -6,6 +6,7 @@ const routes = [
   { path: '/', name: 'home', component: () => import('./views/Home.vue') },
   { path: '/pay', name: 'pay', component: () => import('./views/Pay.vue'), meta: { title: 'Pay Hapta', back: true } },
   { path: '/khata', name: 'khata', component: () => import('./views/Khata.vue'), meta: { title: 'My Khata' } },
+  { path: '/loans/apply', name: 'loan-apply', component: () => import('./views/LoanApply.vue'), meta: { title: 'Ask for a loan', back: true } },
   { path: '/loans', name: 'loans', component: () => import('./views/Loans.vue'), meta: { title: 'Loans' } },
   { path: '/gat', name: 'gat', component: () => import('./views/Gat.vue'), meta: { title: 'Gat Tracker', approver: true } },
   { path: '/approve', redirect: '/gat' },

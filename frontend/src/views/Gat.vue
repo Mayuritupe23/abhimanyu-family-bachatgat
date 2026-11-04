@@ -12,12 +12,13 @@ const error = ref('');
 const busy = ref('');
 const filter = ref('');
 const big = ref('');
+const lg = ref(null);  // loans: requests to decide, approved to pay out, running
 
 async function load() {
   error.value = '';
   try {
-    d.value = await m('gat_month', { month: month.value });
-    if (!filter.value) filter.value = sent.value.length ? 'sent' : pending.value.length ? 'pending' : 'paid';
+    [d.value, lg.value] = await Promise.all([m('gat_month', { month: month.value }), m('gat_loans')]);
+    if (!filter.value) filter.value = sent.value.length ? 'sent' : loanWork.value.length ? 'loans' : pending.value.length ? 'pending' : 'paid';
   } catch (e) { error.value = e.message; }
 }
 onMounted(load);
@@ -35,6 +36,15 @@ const rows = computed(() => d.value?.rows || []);
 const sent = computed(() => rows.value.filter((r) => r.state === 'draft'));
 const pending = computed(() => rows.value.filter((r) => r.state === 'pending'));
 const paid = computed(() => rows.value.filter((r) => r.state === 'paid'));
+const loanWork = computed(() => (lg.value?.rows || []).filter((l) => ['Applied', 'Approved'].includes(l.status)));
+const running = computed(() => (lg.value?.rows || []).filter((l) => l.status === 'Active'));
+async function loanAct(fn, l, extra = {}) {
+  busy.value = l.name;
+  error.value = '';
+  try { lg.value = await m(fn, { loan: l.name, ...extra }); } catch (e) { error.value = e.message; } finally { busy.value = ''; }
+}
+const decide = (l, status) => confirm(`${l.member_name} ${rupee(l.amount)}: ${t(status === 'Approved' ? 'Approve' : 'Reject')}?`) && loanAct('decide_loan', l, { status });
+const giveMoney = (l) => confirm(`${t('Mark as given to')} ${l.member_name}: ${rupee(l.amount)}?`) && loanAct('disburse_loan', l);
 const collected = computed(() => paid.value.reduce((a, r) => a + r.total, 0));
 const shown = computed(() => ({ sent: sent.value, pending: pending.value, paid: paid.value }[filter.value] || []));
 
@@ -94,9 +104,10 @@ function cash(r) {
         <button :class="{ on: filter === 'sent', hot: sent.length }" @click="filter = 'sent'">{{ t('To check') }} <b>{{ sent.length }}</b></button>
         <button :class="{ on: filter === 'pending' }" @click="filter = 'pending'">{{ t('Not paid') }} <b>{{ pending.length }}</b></button>
         <button :class="{ on: filter === 'paid' }" @click="filter = 'paid'">{{ t('Paid') }} <b>{{ paid.length }}</b></button>
+        <button :class="{ on: filter === 'loans', hot: loanWork.length }" @click="filter = 'loans'">{{ t('Loans') }} <b>{{ loanWork.length }}</b></button>
       </div>
 
-      <div v-if="!shown.length" class="card empty"><span>🎉</span>{{ filter === 'sent' ? t('All payments approved') : filter === 'pending' ? t('Everyone has paid') : t('No payments yet') }}</div>
+      <div v-if="!shown.length && filter !== 'loans'" class="card empty"><span>🎉</span>{{ filter === 'sent' ? t('All payments approved') : filter === 'pending' ? t('Everyone has paid') : t('No payments yet') }}</div>
 
       <!-- sent by members: check and approve -->
       <article v-for="r in filter === 'sent' ? shown : []" :key="r.member" class="card">
@@ -134,6 +145,35 @@ function cash(r) {
         </div>
       </article>
 
+      <!-- loans: decide after the votes, then pay out -->
+      <template v-if="filter === 'loans'">
+        <div v-if="!loanWork.length" class="card empty"><span>🤝</span>{{ t('No loan request waiting') }}</div>
+        <article v-for="l in loanWork" :key="l.name" class="card">
+          <div class="row">
+            <div class="av">{{ initials(l.member_name) }}</div>
+            <div class="grow"><b>{{ l.member_name }}</b><div class="muted small">{{ day(l.application_date) }}</div></div>
+            <b>{{ rupee(l.amount) }}</b>
+          </div>
+          <p v-if="l.purpose" class="muted small" style="margin:8px 0 0">“{{ l.purpose }}”</p>
+          <div class="votebar">
+            <span>👍 {{ l.yes }}</span><span>👎 {{ l.no }}</span><span class="muted">{{ lg.members - l.yes - l.no }} {{ t('not voted') }}</span>
+          </div>
+          <div v-if="l.status === 'Applied'" class="acts">
+            <button class="btn small ghost" :disabled="busy === l.name" @click="decide(l, 'Rejected')">{{ t('Reject') }}</button>
+            <button class="btn small" :disabled="busy === l.name" @click="decide(l, 'Approved')">✓ {{ t('Approve') }}</button>
+          </div>
+          <button v-else class="btn small give" :disabled="busy === l.name" @click="giveMoney(l)">💸 {{ t('Money given') }}</button>
+        </article>
+        <div v-if="running.length" class="sec"><h2>{{ t('Running loans') }}</h2></div>
+        <article v-for="l in running" :key="l.name" class="card paidrow">
+          <div class="row">
+            <div class="av">{{ initials(l.member_name) }}</div>
+            <div class="grow"><b>{{ l.member_name }}</b><div class="muted small">{{ l.due_date ? `${t('Close by')} ${day(l.due_date)}` : t('Old loan, no close date') }}</div></div>
+            <b>{{ rupee(l.outstanding) }}</b>
+          </div>
+        </article>
+      </template>
+
       <a href="/desk/gat-monthly" class="card row link"><Icon name="desk" /><span class="grow">{{ t('Open Monthly Sheet') }}</span>→</a>
     </template>
   </div>
@@ -166,6 +206,9 @@ function cash(r) {
 .wa { background: #25d366; box-shadow: none; }
 .av.gray { background: var(--soft); color: var(--muted); }
 .paidrow { padding: 12px 14px; }
+.votebar { display: flex; gap: 14px; margin-top: 10px; font-size: 13px; font-weight: 700; }
+.give { width: 100%; margin-top: 12px; }
+.chips button { padding: 9px 2px; }
 .end { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
 .link { font-weight: 700; color: var(--ink); }
 </style>

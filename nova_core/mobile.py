@@ -46,9 +46,18 @@ def home():
 
 @frappe.whitelist()
 def pay_preview(month=None, payment_date=None, principals=None):
+	"""What to pay for the month, or the payment already sent for it."""
 	from nova_core.nova_core.doctype.monthly_payment.monthly_payment import preview
 
-	return preview(current_member().name, month or today(), payment_date or today(), principals)
+	member = current_member().name
+	month = get_first_day(month or today())
+	existing = frappe.db.get_value(
+		"Monthly Payment", {"member": member, "month": month, "docstatus": ["<", 2]},
+		["name", "docstatus", "total", "payment_date"], as_dict=True,
+	)
+	if existing:
+		return {"existing": existing, "month": month}
+	return preview(member, month, payment_date or today(), principals)
 
 
 @frappe.whitelist()
@@ -86,30 +95,79 @@ def passbook():
 	}
 
 
+def _votes(loan, member=None):
+	votes = frappe.get_all("Loan Vote", {"parent": loan}, ["member", "vote"])
+	return {
+		"yes": sum(v.vote == "Yes" for v in votes),
+		"no": sum(v.vote == "No" for v in votes),
+		"my_vote": next((v.vote for v in votes if v.member == member), None),
+	}
+
+
+def _available(member):
+	"""Loan the member can still apply for: limit minus what is running, applied or approved."""
+	used = 0
+	for l in frappe.get_all(
+		"Loan", {"member": member, "docstatus": 1, "status": ["in", ["Applied", "Approved", "Active"]]},
+		["status", "amount", "outstanding"],
+	):
+		used += flt(l.outstanding) if l.status == "Active" else flt(l.amount)
+	limit = flt(get_settings().loan_limit)
+	return limit, max(limit - used, 0)
+
+
 @frappe.whitelist()
 def loans():
 	member = current_member()
 	mine = frappe.get_all(
 		"Loan",
 		filters={"member": member.name, "docstatus": 1},
-		fields=["name", "amount", "outstanding", "status", "disbursed_on", "due_date", "application_date"],
+		fields=["name", "amount", "outstanding", "status", "purpose", "disbursed_on", "due_date", "application_date"],
 		order_by="creation desc",
 	)
 	for l in mine:
 		l.repaid = flt(l.amount) - flt(l.outstanding) if l.status in ("Active", "Closed") else 0
-	open_loans = frappe.get_all(
+		if l.status in ("Applied", "Approved"):
+			l.update(_votes(l.name))
+	requests = frappe.get_all(
 		"Loan",
 		filters={"docstatus": 1, "status": "Applied", "member": ["!=", member.name]},
 		fields=["name", "member_name", "amount", "purpose", "application_date"],
 		order_by="creation",
 	)
-	my_votes = dict(frappe.get_all("Loan Vote", filters={"member": member.name}, fields=["parent", "vote"], as_list=True))
-	for l in open_loans:
-		votes = frappe.get_all("Loan Vote", {"parent": l.name}, pluck="vote")
-		l.update(yes=votes.count("Yes"), no=votes.count("No"), my_vote=my_votes.get(l.name))
-	limit = flt(get_settings().loan_limit)
-	used = sum(flt(l.outstanding) for l in mine if l.status == "Active")
-	return {"mine": mine, "requests": open_loans, "limit": limit, "available": max(limit - used, 0)}
+	for l in requests:
+		l.update(_votes(l.name, member.name))
+	overdue = frappe.db.exists("Loan", {"member": member.name, "status": "Active", "due_date": ["<", today()]})
+	limit, available = _available(member.name)
+	s = get_settings()
+	return {
+		"mine": mine, "requests": requests, "limit": limit, "available": available,
+		"blocked": _("An old loan is past its close date. Clear it first.") if overdue else None,
+		"rate": s.interest_rate, "tenure": s.loan_tenure_months,
+	}
+
+
+@frappe.whitelist()
+def apply_loan(amount, purpose=None):
+	"""Member asks for a loan from the phone. It goes straight to voting (status Applied)."""
+	doc = frappe.get_doc({"doctype": "Loan", "member": current_member().name, "amount": flt(amount), "purpose": purpose})
+	# members cannot write loans in the desk; here the limit and own-member checks in
+	# Loan.validate still run, so skipping the role check is safe
+	doc.flags.ignore_permissions = True
+	doc.insert()
+	doc.submit()
+	return loans()
+
+
+@frappe.whitelist()
+def withdraw_loan(loan):
+	"""Take back an application nobody has decided on yet."""
+	doc = frappe.get_doc("Loan", loan)
+	if doc.member != current_member().name or doc.status != "Applied":
+		frappe.throw(_("Only your own loan request that is still waiting can be withdrawn"))
+	doc.flags.ignore_permissions = True
+	doc.cancel()
+	return loans()
 
 
 @frappe.whitelist()
@@ -181,3 +239,36 @@ def record_cash(member, month, emi=0):
 
 	save_row(member, month, emi=emi, payment_date=today(), payment_mode="Cash")
 	return gat_month(month)
+
+
+@frappe.whitelist()
+def gat_loans():
+	"""Approver's view of loans: requests to decide, approved ones to pay out, running ones."""
+	frappe.only_for(APPROVER_ROLES)
+	rows = frappe.get_all(
+		"Loan",
+		filters={"docstatus": 1, "status": ["in", ["Applied", "Approved", "Active"]]},
+		fields=["name", "member", "member_name", "amount", "outstanding", "status", "purpose", "application_date", "disbursed_on", "due_date"],
+		order_by="application_date",
+	)
+	members = frappe.db.count("Member", {"status": "Active"})
+	for l in rows:
+		if l.status in ("Applied", "Approved"):
+			l.update(_votes(l.name))
+	return {"rows": rows, "members": members}
+
+
+@frappe.whitelist()
+def decide_loan(loan, status):
+	from nova_core.nova_core.doctype.loan.loan import decide
+
+	decide(loan, status)
+	return gat_loans()
+
+
+@frappe.whitelist()
+def disburse_loan(loan):
+	from nova_core.nova_core.doctype.loan.loan import disburse
+
+	disburse(loan)
+	return gat_loans()
