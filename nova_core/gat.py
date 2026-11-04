@@ -4,6 +4,8 @@ from frappe.utils import add_days, add_years, flt, getdate
 
 GAT_ROLES = ("Gat Member", "Gat Office Bearer", "Khajinadar")
 MODULE_PROFILE = "Gat Member"
+# the committee posts; every other member is a Shareholder
+OFFICE_POSTS = ("Adhyaksh", "Upadhyaksh", "Sachiv", "Sahsachiv", "Khajinadar")
 PRIVILEGED = {"System Manager", "Gat Office Bearer", "Khajinadar"}
 
 

@@ -52,7 +52,7 @@ const cards = computed(() => {
 
     <template v-if="d">
       <p class="hello">{{ greeting }}, <b>{{ firstName }}</b> 🙏
-        <span v-if="d.me && d.me.designation !== 'Member'" class="role">{{ t(d.me.designation) }}</span></p>
+        <span v-if="d.me && d.me.designation && d.me.designation !== 'Shareholder'" class="role">{{ t(d.me.designation) }}</span></p>
       <div class="sec"><h2>{{ t('My account') }}</h2></div>
 
       <!-- this month -->

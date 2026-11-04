@@ -69,7 +69,7 @@ async function out() {
       </label>
       <div>
         <b>{{ b.member?.member_name || b.full_name }}</b>
-        <span class="role" :class="{ office: b.member?.designation && b.member.designation !== 'Member' }">{{ t(b.member?.designation || 'Member') }}</span>
+        <span class="role" :class="{ office: b.member?.designation && b.member.designation !== 'Shareholder' }">{{ t(b.member?.designation || 'Shareholder') }}</span>
         <div class="muted small">{{ b.member?.mobile || b.user }}</div>
         <div class="small photo-acts">
           <span class="muted">{{ photoBusy ? t('Uploading…') : b.photo ? t('Tap the photo to change it') : t('Tap the circle to add your photo') }}</span>

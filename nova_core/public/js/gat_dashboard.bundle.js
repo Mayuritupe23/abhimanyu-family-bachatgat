@@ -232,7 +232,7 @@ const clear = (msg, icon = "🎉") => `<div class="clear"><span>${icon}</span>${
 function hero(d) {
 	const me = d.me;
 	const name = me ? me.member_name.split(" ")[0] : frappe.session.user_fullname;
-	const role = me && me.designation !== "Member" ? `<span class="chip role">${esc(__(me.designation))}</span>` : "";
+	const role = me && me.designation && me.designation !== "Shareholder" ? `<span class="chip role">${esc(__(me.designation))}</span>` : "";
 	const late = d.days_to_due < 0;
 	const due = late
 		? __("Last date {0} passed · fine is running", [user_date(d.due_date)])

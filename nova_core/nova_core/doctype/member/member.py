@@ -6,7 +6,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils.password import update_password
 
-from nova_core.gat import GAT_ROLES, MODULE_PROFILE
+from nova_core.gat import GAT_ROLES, MODULE_PROFILE, OFFICE_POSTS
 
 
 class Member(Document):
@@ -14,7 +14,7 @@ class Member(Document):
 		if not self.user:
 			return
 		wanted = {"Gat Member"}
-		if self.designation != "Member":
+		if self.designation in OFFICE_POSTS:
 			wanted.add("Gat Office Bearer")
 		if self.designation == "Khajinadar" or self.get("can_enter_data"):
 			wanted.add("Khajinadar")

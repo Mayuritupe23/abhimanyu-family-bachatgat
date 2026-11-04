@@ -6,7 +6,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import add_months, flt, fmt_money, now_datetime, today
 
-from nova_core.gat import check_own_member, current_member, get_settings
+from nova_core.gat import OFFICE_POSTS, check_own_member, current_member, get_settings
 
 
 class Loan(Document):
@@ -80,7 +80,7 @@ def cast_vote(loan, vote):
 		frappe.throw(_("Voting is closed for this loan"))
 
 	row = next((r for r in doc.votes if r.member == member.name), None) or doc.append("votes", {"member": member.name})
-	row.update({"vote": vote, "voted_on": now_datetime(), "is_office_bearer": int(member.designation != "Member")})
+	row.update({"vote": vote, "voted_on": now_datetime(), "is_office_bearer": int(member.designation in OFFICE_POSTS)})
 	doc.flags.via_gat_action = True
 	doc.save(ignore_permissions=True)
 
