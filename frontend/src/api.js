@@ -55,10 +55,10 @@ export async function logout() {
   await call('logout').catch(() => {});
 }
 
-export async function upload(file) {
+export async function upload(file, isPrivate = true) {
   const form = new FormData();
   form.append('file', file, file.name || 'screenshot.jpg');
-  form.append('is_private', '1');
+  form.append('is_private', isPrivate ? '1' : '0');
   form.append('folder', 'Home/Attachments');
   const r = await send('/api/method/upload_file', {
     method: 'POST',
@@ -66,6 +66,23 @@ export async function upload(file) {
     body: form,
   });
   return r.file_url;
+}
+
+// profile photo: centre square, small enough to load fast in every list
+export function squarePhoto(file, size = 400) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const side = Math.min(img.width, img.height);
+      const c = document.createElement('canvas');
+      c.width = c.height = size;
+      c.getContext('2d').drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, size, size);
+      c.toBlob((b) => (b ? resolve(new File([b], 'profile.jpg', { type: 'image/jpeg' })) : reject(new Error('Could not read the photo'))), 'image/jpeg', 0.85);
+      URL.revokeObjectURL(img.src);
+    };
+    img.onerror = () => reject(new Error('Could not read the photo'));
+    img.src = URL.createObjectURL(file);
+  });
 }
 
 // big phone photos are shrunk before upload: quicker on weak signal, still readable

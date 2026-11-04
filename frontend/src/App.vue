@@ -1,10 +1,10 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import Avatar from './components/Avatar.vue';
 import Icon from './components/Icon.vue';
 import { store } from './store.js';
 import { t } from './i18n.js';
-import { initials } from './util.js';
 
 const route = useRoute();
 const router = useRouter();
@@ -46,7 +46,7 @@ function later() {
       <img v-else class="brand" src="/assets/nova_core/images/logo.svg" alt="Abhimanyu Bachat Gat" />
       <h1 v-if="route.meta.title">{{ t(route.meta.title) }}</h1>
       <span class="grow" />
-      <router-link to="/me" class="avatar">{{ initials(store.boot?.member?.member_name || store.boot?.full_name) }}</router-link>
+      <router-link to="/me" class="avatar-link"><Avatar :name="store.boot?.member?.member_name || store.boot?.full_name" :photo="store.boot?.photo" :size="36" /></router-link>
     </header>
 
     <main :class="{ padded: showChrome }">

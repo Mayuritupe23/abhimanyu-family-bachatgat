@@ -1,10 +1,11 @@
 <script setup>
 // Other members' loan requests: see who asked, how much and why, and vote.
 import { computed, onMounted, ref } from 'vue';
+import Avatar from '../components/Avatar.vue';
 import Icon from '../components/Icon.vue';
 import { m } from '../api.js';
 import { t } from '../i18n.js';
-import { day, initials, rupee } from '../util.js';
+import { day, rupee } from '../util.js';
 
 const d = ref(null);
 const error = ref('');
@@ -30,7 +31,7 @@ const waiting = computed(() => (d.value?.requests || []).filter((r) => !r.my_vot
       <div v-if="!d.requests.length" class="card empty"><span>🗳️</span>{{ t('No requests to vote on') }}</div>
       <article v-for="r in d.requests" :key="r.name" class="card">
         <div class="row">
-          <div class="av">{{ initials(r.member_name) }}</div>
+          <Avatar :name="r.member_name" :photo="r.photo" />
           <div class="grow"><b>{{ r.member_name }}</b><div class="muted small">{{ t('Asked on') }} {{ day(r.application_date) }}</div></div>
           <b class="amt">{{ rupee(r.amount) }}</b>
         </div>

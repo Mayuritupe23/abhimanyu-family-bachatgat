@@ -13,6 +13,13 @@ from nova_core.gat import current_member, get_settings, sees_all
 APPROVER_ROLES = ("Khajinadar", "System Manager")
 
 
+def _photos():
+	"""Member -> profile photo (the login's User image), for avatars in lists."""
+	return dict(frappe.db.sql(
+		"select m.name, u.user_image from tabMember m join tabUser u on u.name = m.user where ifnull(u.user_image, '') != ''"
+	))
+
+
 def _is_approver():
 	return bool(set(APPROVER_ROLES) & set(frappe.get_roles()))
 
@@ -28,6 +35,7 @@ def boot():
 		"full_name": frappe.utils.get_fullname(),
 		"lang": frappe.local.lang,
 		"member": member,
+		"photo": frappe.db.get_value("User", frappe.session.user, "user_image"),
 		"can_approve": _is_approver(),
 		"sees_all": sees_all(),
 		"group_name": s.group_name,
@@ -172,8 +180,10 @@ def loans():
 		fields=["name", "member_name", "amount", "purpose", "application_date"],
 		order_by="creation",
 	)
+	photos = _photos()
 	for l in requests:
 		l.update(_votes(l.name, member.name))
+		l.photo = photos.get(frappe.db.get_value("Loan", l.name, "member"))
 	overdue = frappe.db.exists("Loan", {"member": member.name, "status": "Active", "due_date": ["<", today()]})
 	limit, available = _available(member.name)
 	s = get_settings()
@@ -261,8 +271,10 @@ def gat_month(month=None):
 
 	sheet = get_sheet(month or today())
 	mobiles = dict(frappe.get_all("Member", fields=["name", "mobile"], as_list=True))
+	photos = _photos()
 	for r in sheet["rows"]:
 		r["mobile"] = mobiles.get(r["member"])
+		r["photo"] = photos.get(r["member"])
 		# what a pending member owes today (fine counted till today)
 		if r["state"] == "pending":
 			r["due"] = flt(r["saving"]) + flt(r["interest"])
@@ -290,7 +302,9 @@ def gat_loans():
 		order_by="application_date",
 	)
 	members = frappe.db.count("Member", {"status": "Active"})
+	photos = _photos()
 	for l in rows:
+		l.photo = photos.get(l.member)
 		if l.status in ("Applied", "Approved"):
 			l.update(_votes(l.name))
 	return {"rows": rows, "members": members}
@@ -385,3 +399,10 @@ def hisaab():
 		"given": given, "repaid": repaid, "exits": exits, "months": months,
 		"expenses": frappe.get_all("Group Expense", fields=["date", "amount", "description"], order_by="date desc"),
 	}
+
+
+@frappe.whitelist()
+def set_photo(file_url=None):
+	"""Set or remove the member's own profile photo."""
+	frappe.db.set_value("User", frappe.session.user, "user_image", file_url or None)
+	return file_url

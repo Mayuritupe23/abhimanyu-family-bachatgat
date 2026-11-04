@@ -1,10 +1,11 @@
 <script setup>
 import { computed, ref } from 'vue';
 import Icon from '../components/Icon.vue';
-import { logout, m } from '../api.js';
+import { logout, m, squarePhoto, upload } from '../api.js';
+import Avatar from '../components/Avatar.vue';
 import { store } from '../store.js';
 import { lang, setLang, t } from '../i18n.js';
-import { initials, rupee } from '../util.js';
+import { rupee } from '../util.js';
 
 const b = computed(() => store.boot);
 const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
@@ -14,6 +15,26 @@ async function switchLang(l) {
   setLang(l);
   m('set_language', { lang: l }).catch(() => {});
 }
+// profile photo: square-cropped and uploaded as a public file so every member's list can show it
+const photoBusy = ref(false);
+const photoError = ref('');
+async function pickPhoto(e) {
+  const f = e.target.files[0];
+  e.target.value = '';
+  if (!f) return;
+  photoBusy.value = true;
+  photoError.value = '';
+  try {
+    const url = await upload(await squarePhoto(f), false);
+    store.boot.photo = await m('set_photo', { file_url: url });
+  } catch (err) { photoError.value = err.message; } finally { photoBusy.value = false; }
+}
+async function removePhoto() {
+  if (!confirm(t('Remove profile photo?'))) return;
+  await m('set_photo', {});
+  store.boot.photo = null;
+}
+
 // change password: the member picks their own; Frappe's password policy decides what is too weak
 const pw = ref({ open: false, old: '', neu: '', again: '', show: false, busy: false, error: '', done: false });
 const pwOk = computed(() => pw.value.old && pw.value.neu.length >= 4 && pw.value.neu === pw.value.again);
@@ -41,10 +62,19 @@ async function out() {
 <template>
   <div class="stack">
     <section class="card me">
-      <div class="av big">{{ initials(b.member?.member_name || b.full_name) }}</div>
+      <label class="pic" :class="{ busy: photoBusy }">
+        <Avatar :name="b.member?.member_name || b.full_name" :photo="b.photo" :size="72" />
+        <span class="cam"><Icon name="camera" :size="15" /></span>
+        <input type="file" accept="image/*" hidden @change="pickPhoto" />
+      </label>
       <div>
         <b>{{ b.member?.member_name || b.full_name }}</b>
         <div class="muted small">{{ b.member?.designation }} · {{ b.member?.mobile || b.user }}</div>
+        <div class="small photo-acts">
+          <span class="muted">{{ photoBusy ? t('Uploading…') : b.photo ? t('Tap the photo to change it') : t('Tap the circle to add your photo') }}</span>
+          <button v-if="b.photo && !photoBusy" class="linkbtn" @click="removePhoto">{{ t('Remove') }}</button>
+        </div>
+        <div v-if="photoError" class="error small">{{ photoError }}</div>
       </div>
     </section>
 
@@ -95,7 +125,12 @@ async function out() {
 
 <style scoped>
 .me { display: flex; align-items: center; gap: 14px; }
-.av.big { width: 58px; height: 58px; font-size: 19px; }
+.pic { position: relative; flex: none; cursor: pointer; }
+.pic.busy { opacity: .5; }
+.cam { position: absolute; right: -2px; bottom: -2px; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--g2); color: #fff; box-shadow: 0 0 0 3px #fff; }
+.photo-acts { display: flex; gap: 10px; align-items: center; margin-top: 4px; }
+.linkbtn { border: 0; background: none; padding: 0; color: var(--red); font-weight: 700; font-size: 12px; }
 .me b { font-size: 18px; }
 .seg { display: flex; background: var(--soft); border-radius: 10px; padding: 3px; }
 .seg button { border: 0; background: none; padding: 6px 12px; border-radius: 8px; font-weight: 700; color: var(--muted); }

@@ -1,10 +1,11 @@
 <script setup>
 // Approver's side: the whole group's month, kept apart from the approver's own account (Home).
 import { computed, onMounted, ref } from 'vue';
+import Avatar from '../components/Avatar.vue';
 import Icon from '../components/Icon.vue';
 import { m } from '../api.js';
 import { lang, t } from '../i18n.js';
-import { day, initials, monthName, rupee, todayISO } from '../util.js';
+import { day, monthName, rupee, todayISO } from '../util.js';
 
 const month = ref(todayISO().slice(0, 8) + '01');
 const d = ref(null);
@@ -37,7 +38,7 @@ const rows = computed(() => d.value?.rows || []);
 const sent = computed(() => [
   ...rows.value.filter((r) => r.state === 'draft').map((r) => ({ ...r, key: r.member })),
   ...rows.value.flatMap((r) => (r.extra_waiting || []).map((x) => ({
-    key: x.name, extra: true, member: r.member, member_name: r.member_name, payment: x.name, payment_date: x.payment_date,
+    key: x.name, extra: true, member: r.member, member_name: r.member_name, photo: r.photo, payment: x.name, payment_date: x.payment_date,
     screenshot: x.screenshot, total: x.principal, emi: x.principal, saving: 0, interest: 0, fine: 0,
   }))),
 ]);
@@ -142,7 +143,7 @@ function markPaid(r) {
       <!-- sent by members: check and approve -->
       <article v-for="r in filter === 'sent' ? shown : []" :key="r.key" class="card">
         <div class="row">
-          <div class="av">{{ initials(r.member_name) }}</div>
+          <Avatar :name="r.member_name" :photo="r.photo" />
           <div class="grow"><b>{{ r.member_name }}</b><div class="muted small">{{ day(r.payment_date) }}<span v-if="r.extra" class="pill orange xtag">{{ t('Extra EMI') }}</span></div></div>
           <b>{{ rupee(r.total) }}</b>
         </div>
@@ -158,7 +159,7 @@ function markPaid(r) {
       <!-- not paid yet: remind, or enter a UPI payment they did not send in the app -->
       <article v-for="r in filter === 'pending' ? shown : []" :key="r.member" class="card">
         <div class="row">
-          <div class="av gray">{{ initials(r.member_name) }}</div>
+          <Avatar :name="r.member_name" :photo="r.photo" gray />
           <div class="grow"><b>{{ r.member_name }}</b><div class="muted small">{{ t('Due') }} {{ rupee(owes(r)) }}<template v-if="fineToday()"> · {{ t('Fine') }} {{ rupee(fineToday()) }}</template></div></div>
         </div>
         <div class="acts">
@@ -170,7 +171,7 @@ function markPaid(r) {
       <!-- done -->
       <article v-for="r in filter === 'paid' ? shown : []" :key="r.member" class="card paidrow">
         <div class="row">
-          <div class="av">{{ initials(r.member_name) }}</div>
+          <Avatar :name="r.member_name" :photo="r.photo" />
           <div class="grow"><b>{{ r.member_name }}</b><div class="muted small">{{ day(r.payment_date) }}</div></div>
           <div class="end"><b>{{ rupee(r.total) }}</b><span class="pill green">UPI</span></div>
         </div>
@@ -181,7 +182,7 @@ function markPaid(r) {
         <div v-if="!loanWork.length" class="card empty"><span>🤝</span>{{ t('No loan request waiting') }}</div>
         <article v-for="l in loanWork" :key="l.name" class="card">
           <div class="row">
-            <div class="av">{{ initials(l.member_name) }}</div>
+            <Avatar :name="l.member_name" :photo="l.photo" />
             <div class="grow"><b>{{ l.member_name }}</b><div class="muted small">{{ day(l.application_date) }}</div></div>
             <b>{{ rupee(l.amount) }}</b>
           </div>
@@ -198,7 +199,7 @@ function markPaid(r) {
         <div v-if="running.length" class="sec"><h2>{{ t('Running loans') }}</h2></div>
         <article v-for="l in running" :key="l.name" class="card paidrow">
           <div class="row">
-            <div class="av">{{ initials(l.member_name) }}</div>
+            <Avatar :name="l.member_name" :photo="l.photo" />
             <div class="grow"><b>{{ l.member_name }}</b><div class="muted small">{{ l.due_date ? `${t('Close by')} ${day(l.due_date)}` : t('Old loan, no close date') }}</div></div>
             <b>{{ rupee(l.outstanding) }}</b>
           </div>

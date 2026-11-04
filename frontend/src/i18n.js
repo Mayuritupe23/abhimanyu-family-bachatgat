@@ -89,6 +89,8 @@ const MR = {
   'Totals do not match. Please tell the treasurer.': 'बेरजा जुळत नाहीत. खजिनदारांना सांगा.', 'Loans so far': 'आतापर्यंतची कर्जे',
   'Loans given': 'दिलेली कर्जे', 'Repaid by members': 'सभासदांनी फेडले', 'Still with members': 'अजून सभासदांकडे',
   'Month by month': 'महिन्यानुसार', Updated: 'अपडेट', 'only approved payments are counted': 'फक्त मंजूर पेमेंट मोजले',
+  'Remove profile photo?': 'प्रोफाइल फोटो काढायचा?', 'Uploading…': 'अपलोड होत आहे…', 'Tap the photo to change it': 'बदलण्यासाठी फोटोवर टॅप करा',
+  'Tap the circle to add your photo': 'फोटो जोडण्यासाठी गोलावर टॅप करा', Remove: 'काढा',
   'Install the Bachat Gat app on your phone': 'बचत गट ॲप फोनवर इंस्टॉल करा', Install: 'इंस्टॉल', 'Open Monthly Sheet': 'मासिक शीट उघडा',
 };
 
