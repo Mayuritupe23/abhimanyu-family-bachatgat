@@ -41,7 +41,9 @@ def boot():
 
 @frappe.whitelist()
 def home():
-	return get_dashboard()
+	data = get_dashboard()
+	data["expense_total"] = flt(frappe.db.get_value("Group Expense", {}, [{"SUM": "amount"}]))
+	return data
 
 
 @frappe.whitelist()
@@ -272,3 +274,29 @@ def disburse_loan(loan):
 
 	disburse(loan)
 	return gat_loans()
+
+
+@frappe.whitelist()
+def sheet(month=None):
+	"""The month's sheet for everyone: what each member has to pay, and the month-end statement."""
+	from nova_core.monthly import get_sheet
+
+	data = get_sheet(month or today())
+	me = frappe.db.get_value("Member", {"user": frappe.session.user})
+	for r in data["rows"]:
+		r["me"] = r["member"] == me
+		r.pop("screenshot", None)  # members see the sheet, not each other's payment proofs
+	return data
+
+
+@frappe.whitelist()
+def expenses():
+	rows = frappe.get_all("Group Expense", fields=["name", "date", "amount", "description"], order_by="date desc")
+	return {"rows": rows, "total": sum(flt(r.amount) for r in rows), "can_add": _is_approver()}
+
+
+@frappe.whitelist()
+def add_expense(date, amount, description):
+	frappe.only_for(APPROVER_ROLES)
+	frappe.get_doc({"doctype": "Group Expense", "date": date, "amount": flt(amount), "description": description}).insert()
+	return expenses()

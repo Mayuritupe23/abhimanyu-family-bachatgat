@@ -1,10 +1,9 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import Icon from '../components/Icon.vue';
 import { m } from '../api.js';
 import { t } from '../i18n.js';
-import { day, initials, rupee } from '../util.js';
+import { day, rupee } from '../util.js';
 
 const route = useRoute();
 const d = ref(null);
@@ -18,7 +17,7 @@ async function run(fn, args, key) {
   error.value = '';
   try { d.value = await m(fn, args); } catch (e) { error.value = e.message; } finally { busy.value = ''; }
 }
-const vote = (loan, v) => run('vote', { loan, vote: v }, loan);
+const waiting = computed(() => (d.value?.requests || []).filter((r) => !r.my_vote).length);
 const withdraw = (l) => confirm(`${t('Withdraw request')} ${rupee(l.amount)}?`) && run('withdraw_loan', { loan: l.name }, l.name);
 
 // where an application stands: asked -> voting -> approved -> money given
@@ -78,22 +77,11 @@ const statusText = { Active: 'Running', Closed: 'Closed', Applied: 'Voting', App
         </template>
       </article>
 
-      <div class="sec"><h2>{{ t('Loan requests') }}</h2></div>
-      <p class="muted small" style="margin:-6px 2px 0">{{ t('Vote on other members\' requests. You can change your vote until it is decided.') }}</p>
-      <div v-if="!d.requests.length" class="card empty"><span>🗳️</span>{{ t('No requests to vote on') }}</div>
-      <article v-for="r in d.requests" :key="r.name" class="card">
-        <div class="row">
-          <div class="av">{{ initials(r.member_name) }}</div>
-          <div class="grow"><b>{{ r.member_name }}</b><div class="muted small">{{ rupee(r.amount) }} · {{ day(r.application_date) }}</div></div>
-          <span class="muted small">👍 {{ r.yes }} · 👎 {{ r.no }}</span>
-        </div>
-        <p v-if="r.purpose" class="purpose">“{{ r.purpose }}”</p>
-        <div class="votes">
-          <button class="btn small yes" :class="{ picked: r.my_vote === 'Yes' }" :disabled="busy === r.name" @click="vote(r.name, 'Yes')"><Icon name="thumbs" :size="16" />{{ t('Yes') }}</button>
-          <button class="btn small no" :class="{ picked: r.my_vote === 'No' }" :disabled="busy === r.name" @click="vote(r.name, 'No')">👎 {{ t('No') }}</button>
-        </div>
-        <p v-if="r.my_vote" class="muted small" style="margin:8px 0 0">{{ t('Your vote') }}: <b>{{ t(r.my_vote) }}</b></p>
-      </article>
+      <router-link to="/loans/requests" class="card row link">
+        <span class="lic">🗳️</span>
+        <span class="grow"><b>{{ t('Loan requests') }}</b><span class="muted small block">{{ t('See who asked and vote') }}</span></span>
+        <span v-if="waiting" class="pill blue">{{ waiting }}</span>→
+      </router-link>
     </template>
   </div>
 </template>
@@ -113,6 +101,9 @@ const statusText = { Active: 'Running', Closed: 'Closed', Applied: 'Voting', App
 .flow li.now::before { border-color: var(--g1); box-shadow: 0 0 0 3px rgba(22,163,74,.2); }
 .left { color: #c2410c; }
 .link { color: var(--g2); font-weight: 800; }
+.link { color: var(--ink); }
+.lic { font-size: 22px; }
+.block { display: block; }
 .purpose { margin: 10px 0 0; font-size: 13px; color: var(--ink); font-style: italic; }
 .votes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
 .votes .btn { width: 100%; }

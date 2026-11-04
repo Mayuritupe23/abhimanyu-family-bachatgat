@@ -25,6 +25,22 @@ const stamp = computed(() => (tm.value?.status === 'Pending' ? (late.value ? 'La
 const pct = computed(() => (d.value?.group.members ? d.value.group.paid_this_month / d.value.group.members : 0));
 const toApprove = computed(() => d.value?.admin?.to_verify?.length || 0);
 const toVote = computed(() => d.value?.me?.to_vote?.length || 0);
+const cards = computed(() => {
+  const me = d.value?.me;
+  const list = [
+    { to: '/pay', icon: 'wallet', color: '#16a34a', title: 'Pay Hapta', sub: tm.value?.status === 'Pending' ? rupee(tm.value.amount) : t(tm.value?.status === 'Paid' ? 'Paid' : 'Waiting for approval') },
+    { to: '/khata', icon: 'book', color: '#0284c7', title: 'My Khata', sub: me ? rupee(me.savings) : '' },
+    { to: '/loans/apply', icon: 'hand', color: '#d97706', title: 'Ask for a loan', sub: t('Apply from here') },
+    { to: '/loans', icon: 'coins', color: '#ea580c', title: 'My loans', sub: me ? rupee(me.loan_total) : '' },
+    { to: '/loans/requests', icon: 'thumbs', color: '#7c3aed', title: 'Loan requests', sub: toVote.value ? `${toVote.value} ${t('to vote')}` : t('See & vote'), badge: toVote.value },
+    { to: '/sheet', icon: 'table', color: '#15803d', title: 'Monthly sheet', sub: t('Who pays what') },
+    { to: '/sheet?tab=statement', icon: 'file', color: '#0f766e', title: 'Statement', sub: t('Month-end report') },
+    { to: '/expenses', icon: 'receipt', color: '#475569', title: 'Group expenses', sub: rupee(d.value?.expense_total || 0) },
+  ];
+  if (store.boot?.can_approve)
+    list.push({ to: '/gat', icon: 'users', color: '#0f172a', title: 'Gat tracker', sub: `${toApprove.value} ${t('to check')}`, badge: toApprove.value });
+  return list;
+});
 </script>
 
 <template>
@@ -58,26 +74,15 @@ const toVote = computed(() => d.value?.me?.to_vote?.length || 0);
         <router-link v-else to="/khata" class="pay ghost">{{ tm?.status === 'Paid' ? t('View receipt') : t('Waiting for approval') }}</router-link>
       </section>
 
-      <!-- approvers: the group's work lives on its own tab, not mixed with their own account -->
-      <router-link v-if="d.admin && store.boot?.can_approve" to="/gat" class="tracker">
-        <div class="ic"><Icon name="users" /></div>
-        <div class="grow">
-          <b>{{ t('Gat tracker') }}</b>
-          <div class="small">
-            <span :class="{ hot: toApprove }">{{ toApprove }} {{ t('to check') }}</span> ·
-            {{ d.admin.unpaid.length }} {{ t('not paid') }}
-          </div>
-        </div>
-        →
-      </router-link>
-      <router-link v-if="toVote" to="/loans" class="nudge blue">
-        <Icon name="thumbs" /><span class="grow"><b>{{ toVote }}</b> {{ t('Loan requests') }} · {{ t('Vote') }}</span>→
-      </router-link>
-
-      <!-- my khata -->
-      <div v-if="d.me" class="two">
-        <router-link to="/khata" class="card mini"><span class="muted small">{{ t('My savings') }}</span><b class="g">{{ rupee(d.me.savings) }}</b></router-link>
-        <router-link to="/loans" class="card mini"><span class="muted small">{{ t('My loan') }}</span><b class="o">{{ rupee(d.me.loan_total) }}</b></router-link>
+      <!-- everything a member can do, one card each -->
+      <div class="sec"><h2>{{ t('What would you like to do?') }}</h2></div>
+      <div class="grid">
+        <router-link v-for="c in cards" :key="c.to" :to="c.to" class="tile" :style="{ '--c': c.color }">
+          <span v-if="c.badge" class="badge">{{ c.badge }}</span>
+          <span class="ic"><Icon :name="c.icon" :size="22" /></span>
+          <b>{{ t(c.title) }}</b>
+          <small>{{ c.sub }}</small>
+        </router-link>
       </div>
 
       <!-- group -->
@@ -117,6 +122,12 @@ const toVote = computed(() => d.value?.me?.to_vote?.length || 0);
 .nudge { display: flex; align-items: center; gap: 10px; padding: 13px 14px; border-radius: 16px; font-size: 14px; font-weight: 600; }
 .nudge.orange { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
 .nudge.blue { background: #f0f9ff; color: #075985; border: 1px solid #bae6fd; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.tile { position: relative; background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 2px; min-height: 104px; }
+.tile:active { transform: scale(.98); }
+.tile .ic { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; margin-bottom: 6px; color: var(--c); background: color-mix(in srgb, var(--c) 12%, white); }
+.tile b { font-size: 14px; } .tile small { color: var(--muted); font-size: 12px; font-weight: 600; }
+.badge { position: absolute; top: 10px; right: 10px; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 99px; display: grid; place-items: center; background: var(--red); color: #fff; font-size: 12px; font-weight: 800; }
 .tracker { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 18px; background: #0f172a; color: #fff; font-weight: 600; }
 .tracker .ic { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; background: rgba(255,255,255,.12); }
 .tracker b { font-size: 15px; }

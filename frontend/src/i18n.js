@@ -59,6 +59,15 @@ const MR = {
   'Open GPay / PhonePe → "Pay UPI ID" (Send to UPI ID)': 'GPay / PhonePe उघडा → "Pay UPI ID"', 'Paste it and pay': 'पेस्ट करून भरा',
   'Or scan the QR': 'किंवा QR स्कॅन करा', 'From another phone, or save it and pick it in your UPI app with "Scan from gallery"': 'दुसऱ्या फोनवरून, किंवा सेव्ह करून UPI ॲपमध्ये "गॅलरीतून स्कॅन" करा',
   'Save QR to phone': 'QR फोनमध्ये सेव्ह करा',
+  'What would you like to do?': 'काय करायचे आहे?', 'Pay Hapta': 'हप्ता भरा', 'Apply from here': 'इथून अर्ज करा', 'My loans': 'माझी कर्जे',
+  'to vote': 'मत द्यायचे', 'See & vote': 'पहा आणि मत द्या', 'Monthly sheet': 'मासिक शीट', 'Who pays what': 'कोणी किती भरायचे',
+  Statement: 'स्टेटमेंट', 'Month-end report': 'महिनाअखेर अहवाल', 'Group expenses': 'गट खर्च', 'Paise Bharna': 'पैसे भरणा',
+  'waiting for your vote': 'तुमच्या मताची वाट', 'Asked on': 'मागितले', 'See who asked and vote': 'कोणी मागितले ते पहा आणि मत द्या',
+  'What each member has to pay this month': 'या महिन्यात प्रत्येकाने किती भरायचे', Name: 'नाव', Loan: 'कर्ज', Monthly: 'मासिक',
+  'Add any EMI you want to repay on top. A late payment adds a fine.': 'फेडायचा EMI वरती जोडा. उशीर झाल्यास दंड लागेल.',
+  Shares: 'शेअर्स', Balance: 'बाकी', 'Not paid yet': 'अजून भरले नाही', 'Total spent by the group': 'गटाचा एकूण खर्च',
+  "This comes out of the group's earnings": 'हा खर्च गटाच्या नफ्यातून जातो', 'Add expense': 'खर्च जोडा', 'What was it for?': 'कशासाठी?',
+  'e.g. meeting tea, bank charges': 'उदा. मीटिंग चहा, बँक शुल्क', Date: 'तारीख', Cancel: 'रद्द', Save: 'सेव्ह', 'No expenses yet': 'अजून खर्च नाही',
   'Install AFBG on your phone': 'AFBG फोनवर इंस्टॉल करा', Install: 'इंस्टॉल', 'Open Monthly Sheet': 'मासिक शीट उघडा',
 };
 
