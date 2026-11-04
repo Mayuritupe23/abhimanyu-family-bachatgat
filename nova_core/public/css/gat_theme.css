@@ -774,3 +774,8 @@ body[data-path="login"] {
 [id="page-Workspaces"] .btn-new-workspace {
 	display: none !important;
 }
+
+/* There is only one app here, so the app-switcher strip that slides in from the left edge
+   on hover has nothing to switch to. The sidebar already has search, notifications and the
+   user menu. */
+#desk-dock { display: none !important; }
