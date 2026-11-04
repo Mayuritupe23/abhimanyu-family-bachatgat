@@ -28,17 +28,17 @@ const toVote = computed(() => d.value?.me?.to_vote?.length || 0);
 const cards = computed(() => {
   const me = d.value?.me;
   const list = [
-    { to: '/pay', icon: 'wallet', color: '#16a34a', title: 'Pay Hapta', sub: tm.value?.status === 'Pending' ? rupee(tm.value.amount) : t(tm.value?.status === 'Paid' ? 'Paid' : 'Waiting for approval') },
-    { to: '/khata', icon: 'book', color: '#0284c7', title: 'My Khata', sub: me ? rupee(me.savings) : '' },
-    { to: '/loans/apply', icon: 'hand', color: '#d97706', title: 'Ask for a loan', sub: t('Apply from here') },
-    { to: '/loans', icon: 'coins', color: '#ea580c', title: 'My loans', sub: me ? rupee(me.loan_total) : '' },
-    { to: '/loans/requests', icon: 'thumbs', color: '#7c3aed', title: 'Loan requests', sub: toVote.value ? `${toVote.value} ${t('to vote')}` : t('See & vote'), badge: toVote.value },
-    { to: '/sheet', icon: 'table', color: '#15803d', title: 'Monthly sheet', sub: t('Who pays what') },
-    { to: '/sheet?tab=statement', icon: 'file', color: '#0f766e', title: 'Statement', sub: t('Month-end report') },
-    { to: '/expenses', icon: 'receipt', color: '#475569', title: 'Group expenses', sub: rupee(d.value?.expense_total || 0) },
+    { to: '/pay', icon: 'wallet', g: ['#22c55e', '#15803d'], title: 'Pay Hapta', sub: tm.value?.status === 'Pending' ? rupee(tm.value.amount) : t(tm.value?.status === 'Paid' ? 'Paid' : 'Waiting for approval') },
+    { to: '/khata', icon: 'book', g: ['#38bdf8', '#0369a1'], title: 'My Khata', sub: me ? rupee(me.savings) : '' },
+    { to: '/loans/apply', icon: 'hand', g: ['#fbbf24', '#d97706'], title: 'Ask for a loan', sub: t('Apply from here') },
+    { to: '/loans', icon: 'coins', g: ['#fb923c', '#c2410c'], title: 'My loans', sub: me ? rupee(me.loan_total) : '' },
+    { to: '/loans/requests', icon: 'thumbs', g: ['#a78bfa', '#6d28d9'], title: 'Loan requests', sub: toVote.value ? `${toVote.value} ${t('to vote')}` : t('See & vote'), badge: toVote.value },
+    { to: '/sheet', icon: 'table', g: ['#34d399', '#047857'], title: 'Monthly sheet', sub: t('Who pays what') },
+    { to: '/sheet?tab=statement', icon: 'file', g: ['#2dd4bf', '#0f766e'], title: 'Statement', sub: t('Month-end report') },
+    { to: '/expenses', icon: 'receipt', g: ['#f472b6', '#be185d'], title: 'Group expenses', sub: rupee(d.value?.expense_total || 0) },
   ];
   if (store.boot?.can_approve)
-    list.push({ to: '/gat', icon: 'users', color: '#0f172a', title: 'Gat tracker', sub: `${toApprove.value} ${t('to check')}`, badge: toApprove.value });
+    list.push({ to: '/gat', icon: 'users', g: ['#475569', '#0f172a'], title: 'Gat tracker', sub: `${toApprove.value} ${t('to check')}`, badge: toApprove.value });
   return list;
 });
 </script>
@@ -77,9 +77,9 @@ const cards = computed(() => {
       <!-- everything a member can do, one card each -->
       <div class="sec"><h2>{{ t('What would you like to do?') }}</h2></div>
       <div class="grid">
-        <router-link v-for="c in cards" :key="c.to" :to="c.to" class="tile" :style="{ '--c': c.color }">
+        <router-link v-for="c in cards" :key="c.to" :to="c.to" class="tile" :style="{ '--a': c.g[0], '--b': c.g[1] }">
           <span v-if="c.badge" class="badge">{{ c.badge }}</span>
-          <span class="ic"><Icon :name="c.icon" :size="22" /></span>
+          <span class="ic"><Icon :name="c.icon" :size="24" /></span>
           <b>{{ t(c.title) }}</b>
           <small>{{ c.sub }}</small>
         </router-link>
@@ -94,10 +94,10 @@ const cards = computed(() => {
           <div><b>{{ d.group.paid_this_month }}/{{ d.group.members }}</b><span>{{ t('Paid this month') }}</span></div>
         </div>
         <div class="tiles">
-          <div><span>🏦</span><small>{{ t('Money with group') }}</small><b>{{ short(d.group.cash) }}</b></div>
-          <div><span>💰</span><small>{{ t('Total savings') }}</small><b>{{ short(d.group.savings) }}</b></div>
-          <div><span>🤝</span><small>{{ t('Loans with members') }}</small><b>{{ short(d.group.loans_out) }}</b></div>
-          <div><span>📈</span><small>{{ t('Earnings') }}</small><b>{{ short(d.group.earnings) }}</b></div>
+          <div style="--a:#22c55e;--b:#15803d"><i><Icon name="bank" :size="18" /></i><small>{{ t('Money with group') }}</small><b>{{ short(d.group.cash) }}</b></div>
+          <div style="--a:#38bdf8;--b:#0369a1"><i><Icon name="piggy" :size="18" /></i><small>{{ t('Total savings') }}</small><b>{{ short(d.group.savings) }}</b></div>
+          <div style="--a:#fb923c;--b:#c2410c"><i><Icon name="hand" :size="18" /></i><small>{{ t('Loans with members') }}</small><b>{{ short(d.group.loans_out) }}</b></div>
+          <div style="--a:#fbbf24;--b:#b45309"><i><Icon name="trend" :size="18" /></i><small>{{ t('Earnings') }}</small><b>{{ short(d.group.earnings) }}</b></div>
         </div>
       </div>
     </template>
@@ -122,12 +122,17 @@ const cards = computed(() => {
 .nudge { display: flex; align-items: center; gap: 10px; padding: 13px 14px; border-radius: 16px; font-size: 14px; font-weight: 600; }
 .nudge.orange { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
 .nudge.blue { background: #f0f9ff; color: #075985; border: 1px solid #bae6fd; }
-.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.tile { position: relative; background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 2px; min-height: 104px; }
-.tile:active { transform: scale(.98); }
-.tile .ic { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; margin-bottom: 6px; color: var(--c); background: color-mix(in srgb, var(--c) 12%, white); }
-.tile b { font-size: 14px; } .tile small { color: var(--muted); font-size: 12px; font-weight: 600; }
-.badge { position: absolute; top: 10px; right: 10px; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 99px; display: grid; place-items: center; background: var(--red); color: #fff; font-size: 12px; font-weight: 800; }
+.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.tile { position: relative; overflow: hidden; background: #fff; border-radius: 20px; padding: 14px 8px 12px; display: flex; flex-direction: column;
+  align-items: center; text-align: center; gap: 3px; box-shadow: 0 1px 2px rgba(15,23,42,.04), 0 6px 16px rgba(15,23,42,.05); border: 1px solid #eef2f0;
+  transition: transform .12s ease; }
+.tile::before { content: ''; position: absolute; inset: auto -30% 62% -30%; height: 80px; background: radial-gradient(closest-side, color-mix(in srgb, var(--a) 22%, transparent), transparent); }
+.tile:active { transform: scale(.96); }
+.tile .ic { position: relative; width: 50px; height: 50px; border-radius: 16px; display: grid; place-items: center; margin-bottom: 7px; color: #fff;
+  background: linear-gradient(140deg, var(--a), var(--b)); box-shadow: 0 8px 16px color-mix(in srgb, var(--b) 35%, transparent), inset 0 1px 0 rgba(255,255,255,.35); }
+.tile b { position: relative; font-size: 12.5px; line-height: 1.2; }
+.tile small { position: relative; color: var(--muted); font-size: 11px; font-weight: 600; line-height: 1.25; }
+.badge { position: absolute; z-index: 1; top: 8px; right: 8px; box-shadow: 0 0 0 2px #fff; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 99px; display: grid; place-items: center; background: var(--red); color: #fff; font-size: 12px; font-weight: 800; }
 .tracker { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 18px; background: #0f172a; color: #fff; font-weight: 600; }
 .tracker .ic { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; background: rgba(255,255,255,.12); }
 .tracker b { font-size: 15px; }
@@ -141,6 +146,7 @@ const cards = computed(() => {
 .ring svg { width: 64px; height: 64px; transform: rotate(-90deg); }
 .ring b { display: block; font-size: 20px; } .ring span { font-size: 12px; color: var(--muted); }
 .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.tiles div { background: var(--soft); border-radius: 14px; padding: 10px 12px; display: flex; flex-direction: column; }
-.tiles span { font-size: 18px; } .tiles small { color: var(--muted); font-weight: 600; margin-top: 2px; } .tiles b { font-size: 18px; font-weight: 800; }
+.tiles div { background: color-mix(in srgb, var(--a) 9%, white); border-radius: 16px; padding: 12px; display: flex; flex-direction: column; }
+.tiles i { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; color: #fff; margin-bottom: 4px;
+  background: linear-gradient(140deg, var(--a), var(--b)); box-shadow: 0 4px 10px color-mix(in srgb, var(--b) 30%, transparent); } .tiles small { color: var(--muted); font-weight: 600; margin-top: 2px; } .tiles b { font-size: 18px; font-weight: 800; }
 </style>
