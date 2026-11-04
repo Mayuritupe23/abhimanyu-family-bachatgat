@@ -68,6 +68,11 @@ const MR = {
   Shares: 'शेअर्स', Balance: 'बाकी', 'Not paid yet': 'अजून भरले नाही', 'Total spent by the group': 'गटाचा एकूण खर्च',
   "This comes out of the group's earnings": 'हा खर्च गटाच्या नफ्यातून जातो', 'Add expense': 'खर्च जोडा', 'What was it for?': 'कशासाठी?',
   'e.g. meeting tea, bank charges': 'उदा. मीटिंग चहा, बँक शुल्क', Date: 'तारीख', Cancel: 'रद्द', Save: 'सेव्ह', 'No expenses yet': 'अजून खर्च नाही',
+  'Change password': 'पासवर्ड बदला', 'Current password': 'सध्याचा पासवर्ड', 'New password': 'नवीन पासवर्ड', 'New password again': 'नवीन पासवर्ड पुन्हा',
+  'At least 4 characters': 'किमान 4 अक्षरे', 'The two new passwords are not the same': 'दोन्ही नवीन पासवर्ड सारखे नाहीत', 'Show passwords': 'पासवर्ड दाखवा',
+  'Saving…': 'सेव्ह होत आहे…', 'Current password is wrong.': 'सध्याचा पासवर्ड चुकीचा आहे.',
+  'Password changed. Please sign in with the new password.': 'पासवर्ड बदलला. नवीन पासवर्डने लॉगिन करा.',
+  'This password is too easy to guess. Try a name with a number, like Pooja@1990.': 'हा पासवर्ड खूप सोपा आहे. नाव आणि आकडा वापरा, उदा. Pooja@1990.',
   'Install AFBG on your phone': 'AFBG फोनवर इंस्टॉल करा', Install: 'इंस्टॉल', 'Open Monthly Sheet': 'मासिक शीट उघडा',
 };
 

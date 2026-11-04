@@ -301,3 +301,18 @@ def add_expense(date, amount, description):
 	frappe.only_for(APPROVER_ROLES)
 	frappe.get_doc({"doctype": "Group Expense", "date": date, "amount": flt(amount), "description": description}).insert()
 	return expenses()
+
+
+@frappe.whitelist()
+def change_password(old_password, new_password):
+	"""Change the member's own password. A wrong current password is reported as a plain error:
+	Frappe's own call answers it with an AuthenticationError, which also ends the session."""
+	from frappe.core.doctype.user.user import update_password
+	from frappe.utils.password import check_password
+
+	try:
+		check_password(frappe.session.user, old_password)
+	except frappe.AuthenticationError:
+		frappe.clear_messages()
+		frappe.throw(_("Current password is wrong."))
+	return update_password(new_password=new_password, old_password=old_password, logout_all_sessions=0)
