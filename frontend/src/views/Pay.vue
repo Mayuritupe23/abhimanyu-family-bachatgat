@@ -40,6 +40,15 @@ const upiLink = computed(() => (pay.upi && p.value?.total
   ? `upi://pay?pa=${encodeURIComponent(pay.upi)}&pn=${encodeURIComponent(pay.payee || '')}&am=${p.value.total}&cu=INR&tn=${encodeURIComponent('AFBG ' + month.value)}`
   : ''));
 
+const copied = ref('');
+async function copy(text, key) {
+  try { await navigator.clipboard.writeText(text); } catch (e) {
+    const el = document.createElement('textarea'); el.value = text; document.body.appendChild(el); el.select(); document.execCommand('copy'); el.remove();
+  }
+  copied.value = key;
+  setTimeout(() => { copied.value = ''; }, 2000);
+}
+
 function pick(e) {
   const f = e.target.files[0];
   if (!f) return;
@@ -127,17 +136,37 @@ const steps = ['Amount', 'Pay', 'Proof'];
         <button class="btn" @click="step = 2">{{ t('Next') }}: {{ t('Pay') }} {{ rupee(p.total) }} →</button>
       </template>
 
-      <!-- 2: pay -->
+      <!-- 2: pay. On a phone the QR cannot be scanned from the same screen, so the UPI app is
+           opened directly with the amount filled in; the QR stays for paying from another phone. -->
       <template v-if="step === 2">
-        <section class="card qr">
-          <span class="muted small">{{ t('Scan and pay to') }}</span>
+        <section class="card payto">
+          <span class="muted small">{{ t('Pay to') }}</span>
           <b class="payee">{{ pay.payee || '—' }}</b>
           <div class="amt">{{ rupee(p.total) }}</div>
-          <img v-if="pay.qr" :src="pay.qr" alt="QR" />
-          <span v-if="pay.upi" class="muted small">{{ pay.upi }}</span>
-          <a v-if="upiLink" :href="upiLink" class="btn">{{ t('Pay in UPI app') }}</a>
+          <a v-if="upiLink" :href="upiLink" class="btn upi">{{ t('Pay with GPay / PhonePe / Paytm') }}</a>
+          <div v-if="pay.upi" class="upiid">
+            <span>{{ pay.upi }}</span>
+            <button @click="copy(pay.upi, 'upi')">{{ copied === 'upi' ? '✓ ' + t('Copied') : t('Copy UPI ID') }}</button>
+          </div>
           <p v-if="!pay.qr && !pay.upi" class="muted small">{{ t('Ask the treasurer where to pay.') }}</p>
         </section>
+
+        <details v-if="upiLink" class="card help">
+          <summary>{{ t('UPI app did not open or the payment failed?') }}</summary>
+          <ol>
+            <li>{{ t('Copy the UPI ID above') }}</li>
+            <li>{{ t('Open GPay / PhonePe → "Pay UPI ID" (Send to UPI ID)') }}</li>
+            <li>{{ t('Paste it and pay') }} {{ rupee(p.total) }}</li>
+          </ol>
+        </details>
+
+        <section v-if="pay.qr" class="card qr">
+          <b>{{ t('Or scan the QR') }}</b>
+          <span class="muted small">{{ t('From another phone, or save it and pick it in your UPI app with "Scan from gallery"') }}</span>
+          <img :src="pay.qr" alt="QR" />
+          <a :href="pay.qr" download="AFBG-QR.jpg" class="btn ghost small">⬇ {{ t('Save QR to phone') }}</a>
+        </section>
+
         <p class="hint">{{ t('Pay exactly this amount, then take a screenshot of the success screen.') }}</p>
         <div class="two-btn">
           <button class="btn ghost" @click="step = 1">← {{ t('Back') }}</button>
@@ -183,8 +212,15 @@ const steps = ['Amount', 'Pay', 'Proof'];
 .money input { flex: 1; min-width: 0; border: 0; outline: none; height: 48px; font-size: 22px; font-weight: 800; background: none; }
 .quick { display: flex; gap: 6px; flex-wrap: wrap; }
 .quick button { border: 1px solid var(--line); background: #fff; border-radius: 99px; padding: 5px 11px; font-size: 12.5px; font-weight: 700; }
-.qr { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; background: linear-gradient(135deg, #f0fdf4, #fffbeb); }
-.qr img { width: 240px; max-width: 100%; border-radius: 14px; background: #fff; padding: 8px; box-shadow: 0 6px 18px rgba(0,0,0,.08); }
+.payto { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; background: linear-gradient(135deg, #f0fdf4, #fffbeb); }
+.upi { margin-top: 6px; font-size: 16px; padding: 16px; }
+.upiid { width: 100%; display: flex; align-items: center; gap: 8px; background: #fff; border: 1px dashed #86efac; border-radius: 12px; padding: 8px 8px 8px 12px; }
+.upiid span { flex: 1; min-width: 0; text-align: left; font-weight: 700; font-size: 14px; overflow: hidden; text-overflow: ellipsis; }
+.upiid button { flex: none; border: 0; border-radius: 9px; padding: 7px 10px; font-weight: 800; font-size: 12px; background: #dcfce7; color: #166534; }
+.help summary { font-weight: 700; font-size: 13.5px; cursor: pointer; }
+.help ol { margin: 10px 0 0; padding-left: 20px; font-size: 13px; line-height: 1.7; color: var(--muted); }
+.qr { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
+.qr img { width: 190px; max-width: 100%; border-radius: 14px; background: #fff; padding: 8px; box-shadow: 0 6px 18px rgba(0,0,0,.08); }
 .payee { font-size: 18px; color: var(--g3); }
 .amt { font-size: 32px; font-weight: 800; }
 .hint { margin: 0 4px; font-size: 13px; color: var(--muted); text-align: center; }

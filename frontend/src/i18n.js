@@ -54,6 +54,11 @@ const MR = {
   "Vote on other members' requests. You can change your vote until it is decided.": 'इतर सभासदांच्या मागणीवर मत द्या. निर्णय होईपर्यंत मत बदलू शकता.',
   'No loan request waiting': 'कोणतीही मागणी बाकी नाही', 'not voted': 'मत नाही', Reject: 'नामंजूर करा', 'Running loans': 'चालू कर्जे',
   'Mark as given to': 'पैसे दिले म्हणून नोंदवा',
+  'Pay to': 'यांना भरा', 'Pay with GPay / PhonePe / Paytm': 'GPay / PhonePe / Paytm ने भरा', Copied: 'कॉपी झाले', 'Copy UPI ID': 'UPI ID कॉपी करा',
+  'UPI app did not open or the payment failed?': 'UPI ॲप उघडले नाही किंवा पेमेंट अयशस्वी?', 'Copy the UPI ID above': 'वरील UPI ID कॉपी करा',
+  'Open GPay / PhonePe → "Pay UPI ID" (Send to UPI ID)': 'GPay / PhonePe उघडा → "Pay UPI ID"', 'Paste it and pay': 'पेस्ट करून भरा',
+  'Or scan the QR': 'किंवा QR स्कॅन करा', 'From another phone, or save it and pick it in your UPI app with "Scan from gallery"': 'दुसऱ्या फोनवरून, किंवा सेव्ह करून UPI ॲपमध्ये "गॅलरीतून स्कॅन" करा',
+  'Save QR to phone': 'QR फोनमध्ये सेव्ह करा',
   'Install AFBG on your phone': 'AFBG फोनवर इंस्टॉल करा', Install: 'इंस्टॉल', 'Open Monthly Sheet': 'मासिक शीट उघडा',
 };
 
