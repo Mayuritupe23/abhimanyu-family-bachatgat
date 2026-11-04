@@ -83,7 +83,12 @@ function whatsapp(r) {
           : `Please pay by ${due} so that no fine is added.`,
         '', `To pay: ${link}`, '', 'If you have already paid, please ignore this message.', 'Thank you 🙏'].join('\n');
   const phone = String(r.mobile || '').replace(/\D/g, '').slice(-10);
-  window.open(`https://wa.me/${phone ? '91' + phone : ''}?text=${encodeURIComponent(text)}`, '_blank');
+  // Open the chat straight away: the WhatsApp app on a phone, WhatsApp Web on a computer.
+  // (wa.me shows a landing page first and its redirect breaks emoji like 🙏.)
+  const q = `phone=${phone ? '91' + phone : ''}&text=${encodeURIComponent(text)}`;
+  const onPhone = /android|iphone|ipad|ipod/i.test(navigator.userAgent);
+  if (onPhone) location.href = `whatsapp://send?${q}`;
+  else window.open(`https://web.whatsapp.com/send?${q}`, 'whatsapp');
 }
 
 async function act(fn, args, key) {
