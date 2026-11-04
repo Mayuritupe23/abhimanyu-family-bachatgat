@@ -36,6 +36,7 @@ const cards = computed(() => {
     { to: '/loans/requests', icon: 'thumbs', g: ['#a78bfa', '#6d28d9'], title: 'Loan requests', sub: toVote.value ? `${toVote.value} ${t('to vote')}` : t('See & vote'), badge: toVote.value },
     { to: '/sheet', icon: 'table', g: ['#34d399', '#047857'], title: 'Monthly sheet', sub: t('Who pays what') },
     { to: '/sheet?tab=statement', icon: 'file', g: ['#2dd4bf', '#0f766e'], title: 'Statement', sub: t('Month-end report') },
+    { to: '/hisaab', icon: 'scale', g: ['#818cf8', '#4338ca'], title: 'Gat ka Hisaab', sub: t('Earnings, expenses, money') },
     { to: '/expenses', icon: 'receipt', g: ['#f472b6', '#be185d'], title: 'Group expenses', sub: rupee(d.value?.expense_total || 0) },
   ];
   if (store.boot?.can_approve)
@@ -95,7 +96,7 @@ const cards = computed(() => {
           <div><b>{{ d.group.paid_this_month }}/{{ d.group.members }}</b><span>{{ t('Paid this month') }}</span></div>
         </div>
         <!-- the group's whole money: what is with the group plus what members hold as loans -->
-        <div class="worth">
+        <router-link to="/hisaab" class="worth">
           <span>{{ t('Total money of the Gat') }}</span>
           <b>{{ rupee(worth) }}</b>
           <div class="split">
@@ -107,7 +108,8 @@ const cards = computed(() => {
             <span><i class="loan" />{{ t('With members as loans') }} <b>{{ rupee(d.group.loans_out) }}</b></span>
           </div>
           <p class="came">{{ t('Where it came from') }}: {{ t('Savings') }} {{ rupee(d.group.savings) }} + {{ t('Earnings') }} {{ rupee(d.group.earnings) }}</p>
-        </div>
+        <span class="more">{{ t('See full account') }} →</span>
+        </router-link>
         <div class="tiles">
           <div style="--a:#22c55e;--b:#15803d"><i><Icon name="bank" :size="18" /></i><small>{{ t('Money with group') }}</small><b>{{ rupee(d.group.cash) }}</b></div>
           <div style="--a:#fb923c;--b:#c2410c"><i><Icon name="hand" :size="18" /></i><small>{{ t('Loans with members') }}</small><b>{{ rupee(d.group.loans_out) }}</b></div>
@@ -168,6 +170,8 @@ const cards = computed(() => {
 .legend { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; font-size: 12.5px; }
 .legend span { display: flex; align-items: center; gap: 6px; } .legend b { margin-left: auto; }
 .legend i { width: 10px; height: 10px; border-radius: 3px; } .legend i.cash { background: #86efac; } .legend i.loan { background: #fbbf24; }
+.worth { display: block; color: #fff; }
+.more { display: block; margin-top: 8px; font-weight: 800; font-size: 13px; color: #fde68a; }
 .came { margin: 10px 0 0; font-size: 11.5px; opacity: .85; border-top: 1px solid rgba(255,255,255,.2); padding-top: 8px; }
 .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .tiles div { background: color-mix(in srgb, var(--a) 9%, white); border-radius: 16px; padding: 12px; display: flex; flex-direction: column; }

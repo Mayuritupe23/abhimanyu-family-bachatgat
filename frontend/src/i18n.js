@@ -80,6 +80,15 @@ const MR = {
   'Only loan repayment': 'फक्त कर्ज परतफेड',
   'Total money of the Gat': 'गटाचे एकूण पैसे', 'With the group': 'गटाकडे', 'With members as loans': 'सभासदांकडे कर्ज म्हणून',
   'Where it came from': 'कुठून आले', Savings: 'बचत',
+  'Gat ka Hisaab': 'गटाचा हिशोब', 'Earnings, expenses, money': 'नफा, खर्च, पैसे', 'See full account': 'पूर्ण हिशोब पहा',
+  'What the Gat earned': 'गटाने काय कमावले', 'Interest from loans': 'कर्जावरील व्याज', 'Late fines': 'उशिराचा दंड',
+  'Earned before the app': 'ॲपपूर्वीचा नफा', 'Minus group expenses': 'वजा गट खर्च', 'Earnings after expenses': 'खर्च वजा करून नफा',
+  "Expenses are taken out of the earnings, never out of anyone's savings.": 'खर्च नफ्यातून वजा होतो, कोणाच्याही बचतीतून नाही.',
+  "Members' savings": 'सभासदांची बचत', 'Paid to members who left': 'सोडून गेलेल्यांना दिले', 'Where this money is now': 'हे पैसे आता कुठे आहेत',
+  'With the group (bank / UPI)': 'गटाकडे (बँक / UPI)', 'Both totals match. The account is correct.': 'दोन्ही बेरजा जुळतात. हिशोब बरोबर आहे.',
+  'Totals do not match. Please tell the treasurer.': 'बेरजा जुळत नाहीत. खजिनदारांना सांगा.', 'Loans so far': 'आतापर्यंतची कर्जे',
+  'Loans given': 'दिलेली कर्जे', 'Repaid by members': 'सभासदांनी फेडले', 'Still with members': 'अजून सभासदांकडे',
+  'Month by month': 'महिन्यानुसार', Updated: 'अपडेट', 'only approved payments are counted': 'फक्त मंजूर पेमेंट मोजले',
   'Install AFBG on your phone': 'AFBG फोनवर इंस्टॉल करा', Install: 'इंस्टॉल', 'Open Monthly Sheet': 'मासिक शीट उघडा',
 };
 

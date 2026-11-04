@@ -351,3 +351,37 @@ def change_password(old_password, new_password):
 		frappe.clear_messages()
 		frappe.throw(_("Current password is wrong."))
 	return update_password(new_password=new_password, old_password=old_password, logout_all_sessions=0)
+
+
+@frappe.whitelist()
+def hisaab():
+	"""The group's whole account in plain steps, for every member: earnings, expenses, where the money is."""
+	s = get_settings()
+
+	def total(sql):
+		return flt(frappe.db.sql(sql)[0][0])
+
+	paid = "from `tabMonthly Payment` where docstatus=1"
+	savings = total(f"select sum(saving) {paid}") + total("select sum(opening_savings) from tabMember")
+	interest = total(f"select sum(interest) {paid}")
+	fines = total(f"select sum(fine) {paid}")
+	repaid = total(f"select sum(principal) {paid}")
+	expense = total("select sum(amount) from `tabGroup Expense`")
+	given = total("select sum(amount) from tabLoan where docstatus=1 and disbursed_on is not null and is_opening=0")
+	loans_out = total("select sum(outstanding) from tabLoan where status='Active'")
+	exits = total("select sum(payable) from `tabMember Exit` where docstatus=1")
+	opening_earnings = flt(s.opening_earnings)
+	earnings = opening_earnings + interest + fines - expense
+	cash = flt(s.opening_cash) + total(f"select sum(saving) {paid}") + interest + fines + repaid - given - expense - exits
+
+	months = frappe.db.sql(
+		f"""select month, sum(saving) saving, sum(interest) interest, sum(fine) fine, sum(principal) emi
+		{paid} group by month order by month desc""",
+		as_dict=True,
+	)
+	return {
+		"savings": savings, "interest": interest, "fines": fines, "expense": expense, "opening_earnings": opening_earnings,
+		"earnings": earnings, "worth": savings + earnings - exits, "cash": cash, "loans_out": loans_out,
+		"given": given, "repaid": repaid, "exits": exits, "months": months,
+		"expenses": frappe.get_all("Group Expense", fields=["date", "amount", "description"], order_by="date desc"),
+	}

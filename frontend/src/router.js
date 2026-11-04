@@ -9,6 +9,7 @@ const routes = [
   { path: '/loans/apply', name: 'loan-apply', component: () => import('./views/LoanApply.vue'), meta: { title: 'Ask for a loan', back: true } },
   { path: '/loans/requests', name: 'loan-requests', component: () => import('./views/LoanRequests.vue'), meta: { title: 'Loan requests', back: true } },
   { path: '/sheet', name: 'sheet', component: () => import('./views/Sheet.vue'), meta: { title: 'Monthly sheet', back: true } },
+  { path: '/hisaab', name: 'hisaab', component: () => import('./views/Hisaab.vue'), meta: { title: 'Gat ka Hisaab', back: true } },
   { path: '/expenses', name: 'expenses', component: () => import('./views/Expenses.vue'), meta: { title: 'Group expenses', back: true } },
   { path: '/loans', name: 'loans', component: () => import('./views/Loans.vue'), meta: { title: 'My loans' } },
   { path: '/gat', name: 'gat', component: () => import('./views/Gat.vue'), meta: { title: 'Gat Tracker', approver: true } },
