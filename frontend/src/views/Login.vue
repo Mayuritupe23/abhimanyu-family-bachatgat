@@ -52,16 +52,18 @@ async function submit() {
 </template>
 
 <style scoped>
-.login { min-height: 100vh; position: relative; overflow: hidden; display: flex; flex-direction: column; color: #fff;
+.login { min-height: 100vh; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center; gap: 22px;
+  padding: calc(24px + env(safe-area-inset-top)) 18px calc(24px + env(safe-area-inset-bottom)); color: #fff;
   background: radial-gradient(circle at 90% 5%, rgba(245,158,11,.55), transparent 40%), linear-gradient(160deg, #16a34a, #14532d 70%); }
-.rings { position: absolute; width: 340px; right: -120px; top: -90px; opacity: .15; }
-.top { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 20px 28px; text-align: center; }
-.top img { width: 88px; height: 88px; border-radius: 24px; box-shadow: 0 14px 30px rgba(0,0,0,.25); }
-h1 { margin: 18px 0 0; font-size: 30px; font-weight: 800; letter-spacing: -.5px; }
+.rings { position: absolute; width: 340px; right: -120px; top: -90px; opacity: .15; pointer-events: none; }
+.top { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.top img { width: 80px; height: 80px; border-radius: 22px; box-shadow: 0 14px 30px rgba(0,0,0,.25); }
+h1 { margin: 14px 0 0; font-size: 28px; font-weight: 800; letter-spacing: -.5px; }
 .tag { margin: 2px 0 0; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; font-size: 12px; color: #fde68a; }
-.mr { margin: 10px 0 0; opacity: .85; }
-.sheet { background: var(--bg); color: var(--ink); border-radius: 26px 26px 0 0; padding: 26px 20px calc(26px + env(safe-area-inset-bottom));
-  display: flex; flex-direction: column; gap: 16px; }
+.mr { margin: 8px 0 0; opacity: .85; }
+/* the sign-in card sits in the middle of the screen, under the logo */
+.sheet { position: relative; width: 100%; max-width: 420px; margin: 0 auto; background: var(--bg); color: var(--ink); border-radius: 24px;
+  padding: 24px 20px 18px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 20px 44px rgba(0,0,0,.28); }
 .pwd { position: relative; }
 .pwd button { position: absolute; right: 8px; top: 8px; height: 32px; border: 0; border-radius: 8px; background: var(--soft); font-size: 12px; font-weight: 700; padding: 0 10px; }
 .lang { border: 0; background: none; color: var(--g2); font-weight: 700; }
