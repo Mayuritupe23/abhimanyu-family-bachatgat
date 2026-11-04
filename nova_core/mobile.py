@@ -235,11 +235,12 @@ def gat_month(month=None):
 
 
 @frappe.whitelist()
-def record_cash(member, month, emi=0):
-	"""Approver records a cash payment handed over in person; it is approved at once."""
+def record_payment(member, month, emi=0, utr=None):
+	"""Approver enters a UPI payment for a member who paid but did not send it in the app;
+	it is approved at once."""
 	from nova_core.monthly import save_row
 
-	save_row(member, month, emi=emi, payment_date=today(), payment_mode="Cash")
+	save_row(member, month, emi=emi, payment_date=today(), payment_mode="UPI")
 	return gat_month(month)
 
 

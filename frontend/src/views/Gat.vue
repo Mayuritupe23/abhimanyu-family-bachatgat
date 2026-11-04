@@ -72,11 +72,12 @@ async function act(fn, args, key) {
 }
 const approve = (r) => act('approve', { payment: r.payment }, r.member);
 const sendBack = (r) => confirm(`${r.member_name}: ${t('Send back')}?`) && act('reject', { payment: r.payment }, r.member);
-function cash(r) {
+// member paid on UPI but did not send it in the app: the approver enters it after checking the bank
+function markPaid(r) {
   const emi = r.loan ? prompt(`${r.member_name} · ${t('EMI')} (${t('Left')} ${rupee(r.loan)})`, '0') : '0';
   if (emi === null) return;
-  if (!confirm(`${r.member_name}: ${t('Cash received')} ${rupee(owes(r) + (+emi || 0))}?`)) return;
-  act('record_cash', { member: r.member, month: month.value, emi: +emi || 0 }, r.member);
+  if (!confirm(`${r.member_name}: ${t('Paid on UPI')} ${rupee(owes(r) + (+emi || 0))}? ${t('Check it reached the bank first.')}`)) return;
+  act('record_payment', { member: r.member, month: month.value, emi: +emi || 0 }, r.member);
 }
 </script>
 
@@ -124,7 +125,7 @@ function cash(r) {
         </div>
       </article>
 
-      <!-- not paid yet: remind or take cash -->
+      <!-- not paid yet: remind, or enter a UPI payment they did not send in the app -->
       <article v-for="r in filter === 'pending' ? shown : []" :key="r.member" class="card">
         <div class="row">
           <div class="av gray">{{ initials(r.member_name) }}</div>
@@ -132,7 +133,7 @@ function cash(r) {
         </div>
         <div class="acts">
           <button class="btn small wa" @click="whatsapp(r)">WhatsApp</button>
-          <button class="btn small ghost" :disabled="busy === r.member" @click="cash(r)">💵 {{ t('Cash received') }}</button>
+          <button class="btn small ghost" :disabled="busy === r.member" @click="markPaid(r)">✓ {{ t('Mark as paid') }}</button>
         </div>
       </article>
 
@@ -141,7 +142,7 @@ function cash(r) {
         <div class="row">
           <div class="av">{{ initials(r.member_name) }}</div>
           <div class="grow"><b>{{ r.member_name }}</b><div class="muted small">{{ day(r.payment_date) }}</div></div>
-          <div class="end"><b>{{ rupee(r.total) }}</b><span class="pill" :class="r.payment_mode === 'Cash' ? 'orange' : 'green'">{{ r.payment_mode || 'UPI' }}</span></div>
+          <div class="end"><b>{{ rupee(r.total) }}</b><span class="pill green">UPI</span></div>
         </div>
       </article>
 

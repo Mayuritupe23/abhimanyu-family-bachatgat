@@ -4,7 +4,7 @@ export const lang = ref('en');
 
 const MR = {
   Home: 'होम', Khata: 'खाते', Loans: 'कर्ज', Approve: 'मंजूर करा', Me: 'मी', Gat: 'गट', 'Gat Tracker': 'गट ट्रॅकर',
-  'To check': 'तपासायचे', 'Not paid': 'न भरलेले', Collected: 'जमा झाले', 'Cash received': 'रोख मिळाले', 'Everyone has paid': 'सर्वांनी भरले',
+  'To check': 'तपासायचे', 'Not paid': 'न भरलेले', Collected: 'जमा झाले', 'Mark as paid': 'भरले म्हणून नोंदवा', 'Paid on UPI': 'UPI ने भरले', 'Check it reached the bank first.': 'आधी बँकेत आले का ते तपासा.', 'Everyone has paid': 'सर्वांनी भरले',
   'My account': 'माझे खाते', 'Gat tracker': 'गट ट्रॅकर', 'to check': 'तपासायचे', 'not paid': 'न भरलेले',
   'Good morning': 'सुप्रभात', 'Good afternoon': 'नमस्कार', 'Good evening': 'शुभ संध्या',
   'This month': 'या महिन्यात', 'Last date': 'शेवटची तारीख', 'days left': 'दिवस बाकी', 'Today is the last date': 'आज शेवटची तारीख',
@@ -12,7 +12,7 @@ const MR = {
   'Pay now': 'आता भरा', 'View receipt': 'पावती पहा', 'Waiting for approval': 'मंजुरीची वाट',
   Saving: 'बचत', Interest: 'व्याज', EMI: 'हप्ता (EMI)', Fine: 'दंड', Total: 'एकूण',
   'My savings': 'माझी बचत', 'My loan': 'माझे कर्ज', 'Our Gat': 'आपला गट',
-  'Cash with group': 'गटाकडील रोख', 'Total savings': 'एकूण बचत', 'Loans with members': 'सभासदांकडील कर्ज', Earnings: 'नफा',
+  'Money with group': 'गटाकडील पैसे', 'Total savings': 'एकूण बचत', 'Loans with members': 'सभासदांकडील कर्ज', Earnings: 'नफा',
   'Paid this month': 'या महिन्यात भरले', 'Loan requests': 'कर्ज मागण्या', 'Vote': 'मत द्या', Yes: 'होय', No: 'नाही',
   'Your vote': 'तुमचे मत', 'Needs your approval': 'तुमच्या मंजुरीसाठी',
   'Pay Hapta': 'हप्ता भरा', 'Scan and pay to': 'स्कॅन करून पैसे पाठवा', 'Pay in UPI app': 'UPI ॲपमध्ये भरा',

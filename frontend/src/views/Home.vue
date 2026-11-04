@@ -94,7 +94,7 @@ const cards = computed(() => {
           <div><b>{{ d.group.paid_this_month }}/{{ d.group.members }}</b><span>{{ t('Paid this month') }}</span></div>
         </div>
         <div class="tiles">
-          <div><span>🏦</span><small>{{ t('Cash with group') }}</small><b>{{ short(d.group.cash) }}</b></div>
+          <div><span>🏦</span><small>{{ t('Money with group') }}</small><b>{{ short(d.group.cash) }}</b></div>
           <div><span>💰</span><small>{{ t('Total savings') }}</small><b>{{ short(d.group.savings) }}</b></div>
           <div><span>🤝</span><small>{{ t('Loans with members') }}</small><b>{{ short(d.group.loans_out) }}</b></div>
           <div><span>📈</span><small>{{ t('Earnings') }}</small><b>{{ short(d.group.earnings) }}</b></div>

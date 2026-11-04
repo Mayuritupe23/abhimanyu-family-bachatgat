@@ -148,7 +148,8 @@
    "fieldname": "payment_mode",
    "fieldtype": "Select",
    "label": "Paid By",
-   "options": "UPI\nCash"
+   "options": "UPI",
+   "read_only": 1
   },
   {
    "fieldname": "pay_here",
@@ -160,7 +161,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-11-03 18:00:00.000000",
+ "modified": "2026-11-04 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Nova Core",
  "name": "Monthly Payment",

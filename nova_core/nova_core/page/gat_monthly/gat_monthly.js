@@ -115,7 +115,7 @@ class GatMonthly {
 					<td>${r.no}</td><td><b>${esc(r.member_name)}</b></td><td>${num(r.loan)}</td><td>${num(r.interest)}</td><td>${num(r.saving)}</td>
 					<td><input type="number" min="0" max="${r.loan}" step="1" class="emi" value="" placeholder="0" ${r.loan ? "" : "disabled"}></td>
 					<td class="gm-when"><input type="date" class="date" value="${today}">
-						<select class="mode"><option>UPI</option><option>Cash</option></select></td>
+</td>
 					<td class="fine">0</td><td class="total"><b>0</b></td>
 					<td><button class="gm-btn" data-save>✔ ${__("Save")}</button></td></tr>`;
 			})
@@ -134,7 +134,7 @@ class GatMonthly {
 					<th>${__("Monthly")}</th><th>${__("EMI")}</th><th>${__("Paid On")}</th><th>${__("Fine")}</th><th>${__("Total")}</th><th></th></tr></thead>
 				<tbody>${rows}</tbody>
 			</table></div>
-			<p class="muted gm-hint">${__("Blue rows: members sent a payment. Check the screenshot and the money, then Approve. For cash, type the EMI and press Save. Fine is added by itself.")}</p>`;
+			<p class="muted gm-hint">${__("Blue rows: members sent a payment. Check the screenshot and the money, then Approve. If someone paid on UPI but did not send it in the app, type the EMI and press Save. Fine is added by itself.")}</p>`;
 	}
 
 	preview(tr) {
@@ -156,7 +156,7 @@ class GatMonthly {
 				month: this.month.format("YYYY-MM-DD"),
 				emi: +$tr.find(".emi").val() || 0,
 				payment_date: $tr.find(".date").val(),
-				payment_mode: $tr.find(".mode").val(),
+				payment_mode: "UPI",
 			})
 			.then(() => {
 				frappe.show_alert({ message: __("Saved"), indicator: "green" });
