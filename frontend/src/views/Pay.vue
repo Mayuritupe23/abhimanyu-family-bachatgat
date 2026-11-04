@@ -50,7 +50,7 @@ const closesAll = computed(() => loans.value.length && loans.value.every((l) => 
 function closeAll() { loans.value.forEach((l) => { principal[l.loan] = l.outstanding; }); }
 function clearEmi() { loans.value.forEach((l) => { principal[l.loan] = 0; }); }
 const upiLink = computed(() => (pay.upi && p.value?.total
-  ? `upi://pay?pa=${encodeURIComponent(pay.upi)}&pn=${encodeURIComponent(pay.payee || '')}&am=${p.value.total}&cu=INR&tn=${encodeURIComponent('AFBG ' + month.value)}`
+  ? `upi://pay?pa=${encodeURIComponent(pay.upi)}&pn=${encodeURIComponent(pay.payee || '')}&am=${p.value.total}&cu=INR&tn=${encodeURIComponent('Bachat Gat hapta ' + month.value)}`
   : ''));
 
 const copied = ref('');
@@ -190,7 +190,7 @@ const steps = ['Amount', 'Pay', 'Proof'];
           <b>{{ t('Or scan the QR') }}</b>
           <span class="muted small">{{ t('From another phone, or save it and pick it in your UPI app with "Scan from gallery"') }}</span>
           <img :src="pay.qr" alt="QR" />
-          <a :href="pay.qr" download="AFBG-QR.jpg" class="btn ghost small">⬇ {{ t('Save QR to phone') }}</a>
+          <a :href="pay.qr" download="Bachat-Gat-QR.jpg" class="btn ghost small">⬇ {{ t('Save QR to phone') }}</a>
         </section>
 
         <p class="hint">{{ t('Pay exactly this amount, then take a screenshot of the success screen.') }}</p>

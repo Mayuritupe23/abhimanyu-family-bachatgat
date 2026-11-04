@@ -3,7 +3,7 @@
 import { computed, onMounted, ref } from 'vue';
 import Icon from '../components/Icon.vue';
 import { m } from '../api.js';
-import { t } from '../i18n.js';
+import { lang, t } from '../i18n.js';
 import { day, initials, monthName, rupee, todayISO } from '../util.js';
 
 const month = ref(todayISO().slice(0, 8) + '01');
@@ -64,7 +64,24 @@ const owes = (r) => r.due + fineToday();
 
 function whatsapp(r) {
   const first = r.member_name.split(' ')[0];
-  const text = `Namaskar ${first} 🙏\nAFBG: ${monthName(month.value)} hapta ${rupee(owes(r))} baki aahe.\nLast date ${day(d.value.due_date)}.\nPay: ${location.origin}/afbg/pay`;
+  const fine = fineToday();
+  // Marathi when the approver uses the app in Marathi, otherwise English; the group's full name, never the short app name
+  const amount = rupee(owes(r));
+  const due = day(d.value.due_date);
+  const link = `${location.origin}/afbg/pay`;
+  const text = lang.value === 'mr'
+    ? [`नमस्कार ${first} जी 🙏`, `*अभिमन्यू फॅमिली बचत गट* कडून एक छोटीशी आठवण 😊`, '',
+        `${monthName(month.value)} महिन्याचा हप्ता *${amount}* अजून जमा झालेला दिसत नाही.`,
+        fine
+          ? `शेवटची तारीख ${due} होऊन गेल्यामुळे आतापर्यंत ${rupee(fine)} दंड लागला आहे. कृपया जमेल तितक्या लवकर भरावा.`
+          : `कृपया ${due} पर्यंत भरावा, म्हणजे दंड लागणार नाही.`,
+        '', `भरण्यासाठी: ${link}`, '', 'आधीच भरले असल्यास कृपया या संदेशाकडे दुर्लक्ष करावे.', 'धन्यवाद 🙏'].join('\n')
+    : [`Namaskar ${first} ji 🙏`, `A gentle reminder from *Abhimanyu Family Bachat Gat* 😊`, '',
+        `Your ${monthName(month.value)} hapta of *${amount}* has not reached us yet.`,
+        fine
+          ? `The last date (${due}) has passed, so a fine of ${rupee(fine)} has been added. Please pay as soon as you can.`
+          : `Please pay by ${due} so that no fine is added.`,
+        '', `To pay: ${link}`, '', 'If you have already paid, please ignore this message.', 'Thank you 🙏'].join('\n');
   const phone = String(r.mobile || '').replace(/\D/g, '').slice(-10);
   window.open(`https://wa.me/${phone ? '91' + phone : ''}?text=${encodeURIComponent(text)}`, '_blank');
 }

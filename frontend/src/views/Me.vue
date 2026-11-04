@@ -84,12 +84,12 @@ async function out() {
     </section>
 
     <section v-if="ios && !standalone" class="card ios">
-      <b>{{ t('Install AFBG on your phone') }}</b>
+      <b>{{ t('Install the Bachat Gat app on your phone') }}</b>
       <p class="muted small">Safari → Share ⬆️ → “Add to Home Screen”</p>
     </section>
 
     <button class="card row link out" @click="out"><Icon name="logout" /><span class="grow">{{ t('Log out') }}</span></button>
-    <p class="muted small ver">AFBG · Abhimanyu Family Bachat Gat</p>
+    <p class="muted small ver">Abhimanyu Family Bachat Gat</p>
   </div>
 </template>
 

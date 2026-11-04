@@ -57,7 +57,7 @@ function later() {
 
     <div v-if="installEvent && showChrome" class="install">
       <img src="/assets/nova_core/images/icon-192.png" alt="" />
-      <b>{{ t('Install AFBG on your phone') }}</b>
+      <b>{{ t('Install the Bachat Gat app on your phone') }}</b>
       <button class="go" @click="install">{{ t('Install') }}</button>
       <button class="x" @click="later" aria-label="later"><Icon name="x" :size="16" /></button>
     </div>
