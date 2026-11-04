@@ -174,7 +174,6 @@ function cash(r) {
         </article>
       </template>
 
-      <a href="/desk/gat-monthly" class="card row link"><Icon name="desk" /><span class="grow">{{ t('Open Monthly Sheet') }}</span>→</a>
     </template>
   </div>
 </template>

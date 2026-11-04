@@ -53,7 +53,6 @@ async function out() {
       <p class="muted small">Safari → Share ⬆️ → “Add to Home Screen”</p>
     </section>
 
-    <a v-if="b.sees_all" href="/desk/gat" class="card row link"><Icon name="desk" /><span class="grow">{{ t('Open full desk') }}</span>→</a>
     <button class="card row link out" @click="out"><Icon name="logout" /><span class="grow">{{ t('Log out') }}</span></button>
     <p class="muted small ver">AFBG · Abhimanyu Family Bachat Gat</p>
   </div>
