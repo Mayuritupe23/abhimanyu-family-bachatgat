@@ -4,7 +4,7 @@ import Icon from '../components/Icon.vue';
 import { m } from '../api.js';
 import { store } from '../store.js';
 import { t } from '../i18n.js';
-import { day, monthName, rupee, short } from '../util.js';
+import { day, monthName, rupee } from '../util.js';
 
 const d = ref(null);
 const error = ref('');
@@ -24,6 +24,7 @@ const late = computed(() => d.value && d.value.days_to_due < 0);
 const stamp = computed(() => (tm.value?.status === 'Pending' ? (late.value ? 'Late' : 'Due') : tm.value?.status === 'Paid' ? 'Paid' : 'Sent'));
 const pct = computed(() => (d.value?.group.members ? d.value.group.paid_this_month / d.value.group.members : 0));
 const toApprove = computed(() => d.value?.admin?.to_verify?.length || 0);
+const worth = computed(() => (d.value ? d.value.group.cash + d.value.group.loans_out : 0));
 const toVote = computed(() => d.value?.me?.to_vote?.length || 0);
 const cards = computed(() => {
   const me = d.value?.me;
@@ -93,11 +94,25 @@ const cards = computed(() => {
             <circle cx="21" cy="21" r="17" fill="none" stroke="#16a34a" stroke-width="4" stroke-linecap="round" :stroke-dasharray="`${(pct * 106.8).toFixed(1)} 106.8`" /></svg>
           <div><b>{{ d.group.paid_this_month }}/{{ d.group.members }}</b><span>{{ t('Paid this month') }}</span></div>
         </div>
+        <!-- the group's whole money: what is with the group plus what members hold as loans -->
+        <div class="worth">
+          <span>{{ t('Total money of the Gat') }}</span>
+          <b>{{ rupee(worth) }}</b>
+          <div class="split">
+            <span :style="{ width: `${worth ? (d.group.cash / worth) * 100 : 0}%` }" class="cash" />
+            <span :style="{ width: `${worth ? (d.group.loans_out / worth) * 100 : 0}%` }" class="loan" />
+          </div>
+          <div class="legend">
+            <span><i class="cash" />{{ t('With the group') }} <b>{{ rupee(d.group.cash) }}</b></span>
+            <span><i class="loan" />{{ t('With members as loans') }} <b>{{ rupee(d.group.loans_out) }}</b></span>
+          </div>
+          <p class="came">{{ t('Where it came from') }}: {{ t('Savings') }} {{ rupee(d.group.savings) }} + {{ t('Earnings') }} {{ rupee(d.group.earnings) }}</p>
+        </div>
         <div class="tiles">
-          <div style="--a:#22c55e;--b:#15803d"><i><Icon name="bank" :size="18" /></i><small>{{ t('Money with group') }}</small><b>{{ short(d.group.cash) }}</b></div>
-          <div style="--a:#38bdf8;--b:#0369a1"><i><Icon name="piggy" :size="18" /></i><small>{{ t('Total savings') }}</small><b>{{ short(d.group.savings) }}</b></div>
-          <div style="--a:#fb923c;--b:#c2410c"><i><Icon name="hand" :size="18" /></i><small>{{ t('Loans with members') }}</small><b>{{ short(d.group.loans_out) }}</b></div>
-          <div style="--a:#fbbf24;--b:#b45309"><i><Icon name="trend" :size="18" /></i><small>{{ t('Earnings') }}</small><b>{{ short(d.group.earnings) }}</b></div>
+          <div style="--a:#22c55e;--b:#15803d"><i><Icon name="bank" :size="18" /></i><small>{{ t('Money with group') }}</small><b>{{ rupee(d.group.cash) }}</b></div>
+          <div style="--a:#fb923c;--b:#c2410c"><i><Icon name="hand" :size="18" /></i><small>{{ t('Loans with members') }}</small><b>{{ rupee(d.group.loans_out) }}</b></div>
+          <div style="--a:#38bdf8;--b:#0369a1"><i><Icon name="piggy" :size="18" /></i><small>{{ t('Total savings') }}</small><b>{{ rupee(d.group.savings) }}</b></div>
+          <div style="--a:#fbbf24;--b:#b45309"><i><Icon name="trend" :size="18" /></i><small>{{ t('Earnings') }}</small><b>{{ rupee(d.group.earnings) }}</b></div>
         </div>
       </div>
     </template>
@@ -145,8 +160,17 @@ const cards = computed(() => {
 .ring { display: flex; align-items: center; gap: 14px; }
 .ring svg { width: 64px; height: 64px; transform: rotate(-90deg); }
 .ring b { display: block; font-size: 20px; } .ring span { font-size: 12px; color: var(--muted); }
+.worth { border-radius: 18px; padding: 16px; color: #fff; background: radial-gradient(circle at 95% 0, rgba(245,158,11,.45), transparent 45%), linear-gradient(135deg, #16a34a, #14532d); }
+.worth > span { font-size: 12.5px; font-weight: 700; opacity: .9; }
+.worth > b { display: block; font-size: 30px; font-weight: 800; letter-spacing: -.5px; margin: 2px 0 10px; }
+.split { display: flex; height: 10px; border-radius: 99px; overflow: hidden; background: rgba(255,255,255,.2); }
+.split .cash { background: #86efac; } .split .loan { background: #fbbf24; }
+.legend { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; font-size: 12.5px; }
+.legend span { display: flex; align-items: center; gap: 6px; } .legend b { margin-left: auto; }
+.legend i { width: 10px; height: 10px; border-radius: 3px; } .legend i.cash { background: #86efac; } .legend i.loan { background: #fbbf24; }
+.came { margin: 10px 0 0; font-size: 11.5px; opacity: .85; border-top: 1px solid rgba(255,255,255,.2); padding-top: 8px; }
 .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .tiles div { background: color-mix(in srgb, var(--a) 9%, white); border-radius: 16px; padding: 12px; display: flex; flex-direction: column; }
 .tiles i { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; color: #fff; margin-bottom: 4px;
-  background: linear-gradient(140deg, var(--a), var(--b)); box-shadow: 0 4px 10px color-mix(in srgb, var(--b) 30%, transparent); } .tiles small { color: var(--muted); font-weight: 600; margin-top: 2px; } .tiles b { font-size: 18px; font-weight: 800; }
+  background: linear-gradient(140deg, var(--a), var(--b)); box-shadow: 0 4px 10px color-mix(in srgb, var(--b) 30%, transparent); } .tiles small { color: var(--muted); font-weight: 600; margin-top: 2px; } .tiles b { font-size: 17px; font-weight: 800; }
 </style>

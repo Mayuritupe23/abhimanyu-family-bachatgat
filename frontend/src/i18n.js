@@ -78,6 +78,8 @@ const MR = {
   "Only loan repayment. Saving and interest are already in this month's hapta.": 'फक्त कर्ज परतफेड. बचत आणि व्याज या महिन्याच्या हप्त्यात आहे.',
   'How much loan do you want to repay?': 'किती कर्ज फेडायचे?', "Whatever you repay lowers next month's interest.": 'जितके फेडाल तितके पुढील महिन्याचे व्याज कमी.',
   'Only loan repayment': 'फक्त कर्ज परतफेड',
+  'Total money of the Gat': 'गटाचे एकूण पैसे', 'With the group': 'गटाकडे', 'With members as loans': 'सभासदांकडे कर्ज म्हणून',
+  'Where it came from': 'कुठून आले', Savings: 'बचत',
   'Install AFBG on your phone': 'AFBG फोनवर इंस्टॉल करा', Install: 'इंस्टॉल', 'Open Monthly Sheet': 'मासिक शीट उघडा',
 };
 
