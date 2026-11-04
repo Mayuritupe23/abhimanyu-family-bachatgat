@@ -43,6 +43,11 @@ def get_dashboard():
 			"earnings": flt(s.opening_earnings) + interest + fine - expense,
 			"members": len(members),
 			"paid_this_month": len(paid_members),
+			"interest": interest,
+			"fines": fine,
+			"expense": expense,
+			"opening_earnings": flt(s.opening_earnings),
+			"exits": exits,
 		},
 		"trends": _trends(month),
 		"loan_mix": frappe.get_all(

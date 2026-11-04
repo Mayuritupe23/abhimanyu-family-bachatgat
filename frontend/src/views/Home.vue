@@ -51,7 +51,8 @@ const cards = computed(() => {
     <template v-if="!d && !error"><div class="skeleton" /><div class="skeleton" /></template>
 
     <template v-if="d">
-      <p class="hello">{{ greeting }}, <b>{{ firstName }}</b> 🙏</p>
+      <p class="hello">{{ greeting }}, <b>{{ firstName }}</b> 🙏
+        <span v-if="d.me && d.me.designation !== 'Member'" class="role">{{ t(d.me.designation) }}</span></p>
       <div class="sec"><h2>{{ t('My account') }}</h2></div>
 
       <!-- this month -->
@@ -124,6 +125,7 @@ const cards = computed(() => {
 <style scoped>
 .hello { margin: 2px 2px 0; font-size: 15px; color: var(--muted); }
 .hello b { color: var(--ink); }
+.role { margin-left: 6px; padding: 2px 9px; border-radius: 99px; font-size: 11.5px; font-weight: 800; color: #451a03; background: linear-gradient(90deg, #fbbf24, #f59e0b); vertical-align: 2px; }
 .hero { position: relative; overflow: hidden; border-radius: 22px; padding: 18px; color: #fff;
   background: radial-gradient(circle at 95% 0, rgba(245,158,11,.5), transparent 42%), linear-gradient(135deg, #16a34a, #14532d); box-shadow: 0 14px 30px rgba(20,83,45,.28); }
 .head { display: flex; justify-content: space-between; align-items: center; }

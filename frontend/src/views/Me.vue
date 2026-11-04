@@ -69,7 +69,8 @@ async function out() {
       </label>
       <div>
         <b>{{ b.member?.member_name || b.full_name }}</b>
-        <div class="muted small">{{ b.member?.designation }} · {{ b.member?.mobile || b.user }}</div>
+        <span class="role" :class="{ office: b.member?.designation && b.member.designation !== 'Member' }">{{ t(b.member?.designation || 'Member') }}</span>
+        <div class="muted small">{{ b.member?.mobile || b.user }}</div>
         <div class="small photo-acts">
           <span class="muted">{{ photoBusy ? t('Uploading…') : b.photo ? t('Tap the photo to change it') : t('Tap the circle to add your photo') }}</span>
           <button v-if="b.photo && !photoBusy" class="linkbtn" @click="removePhoto">{{ t('Remove') }}</button>
@@ -125,6 +126,8 @@ async function out() {
 
 <style scoped>
 .me { display: flex; align-items: center; gap: 14px; }
+.role { display: inline-block; margin: 3px 0 2px; padding: 2px 10px; border-radius: 99px; font-size: 12px; font-weight: 800; background: var(--soft); color: var(--muted); }
+.role.office { background: linear-gradient(90deg, #fbbf24, #f59e0b); color: #451a03; }
 .pic { position: relative; flex: none; cursor: pointer; }
 .pic.busy { opacity: .5; }
 .cam { position: absolute; right: -2px; bottom: -2px; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;

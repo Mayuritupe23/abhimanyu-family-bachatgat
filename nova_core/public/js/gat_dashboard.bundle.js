@@ -190,6 +190,24 @@ const STYLE = `
 	.key:hover { background: var(--soft); }
 	.key i { width: 12px; height: 12px; border-radius: 4px; }
 
+	/* hisaab */
+	.hisaab { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+	.hcard { position: relative; }
+	.hcard h4 { margin: 0 0 10px; font-size: 14px; font-weight: 800; color: var(--ink); }
+	.hstep { position: absolute; top: 14px; right: 14px; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
+		color: #fff; font-weight: 800; font-size: 12px; background: linear-gradient(140deg, #22c55e, #15803d); }
+	.hl { display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; color: var(--muted); }
+	.hl b { color: var(--ink); white-space: nowrap; }
+	.hl.plus b { color: #15803d; } .hl.minus b { color: #dc2626; }
+	.hl.link span { color: #15803d; font-weight: 700; cursor: pointer; }
+	.hl.tot span { color: var(--ink); font-weight: 800; } .hl.tot b { font-size: 18px; }
+	.hdiv { border-top: 2px dashed var(--line); margin: 6px 0; }
+	.hworth { font-size: 26px; font-weight: 800; text-align: right; color: var(--ink); }
+	.hnote { margin: 8px 0 0; font-size: 11.5px; color: var(--muted); background: #fffbeb; border-radius: 10px; padding: 8px 10px; }
+	.hsplit { display: flex; height: 10px; border-radius: 99px; overflow: hidden; background: var(--soft); margin-bottom: 6px; }
+	.hok { margin-top: 8px; padding: 8px 10px; border-radius: 10px; background: #dcfce7; color: #166534; font-weight: 700; font-size: 12px; }
+	.hok.bad { background: #fee2e2; color: #991b1b; }
+	@media (max-width: 1000px) { .hisaab { grid-template-columns: minmax(0, 1fr); } }
 	@media (max-width: 1000px) { .two { grid-template-columns: minmax(0, 1fr); } .wallet { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 	@media (max-width: 560px) {
 		.hero { flex-direction: column; align-items: flex-start; padding: 20px; }
@@ -321,20 +339,47 @@ function votes(d) {
 
 // ------------------------------------------------------------------ group
 
+// the group's account, same three steps as the phone app's Hisaab screen, in full rupees
 function wallet(d) {
 	const g = d.group;
-	const tiles = [
-		["🏦", __("Cash with group"), g.cash, "#15803d", "#dcfce7", ["query-report", "Group Balance"]],
-		["💰", __("Total savings"), g.savings, "#0369a1", "#e0f2fe", ["query-report", "Group Balance"]],
-		["🤝", __("Loans with members"), g.loans_out, "#c2410c", "#ffedd5", ["List", "Loan"]],
-		["📈", __("Earnings"), g.earnings, "#a16207", "#fef9c3", ["query-report", "Group Balance"]],
-	];
-	return `<div>${sec("👥", __("Our Gat"))}<div class="wallet">${tiles
-		.map(
-			([ic, l, v, c, bg, r]) => `<div class="tile" style="--c:${c};--c-bg:${bg}" ${route_attr(r)}>
-			<div class="ic">${ic}</div><div><div class="l">${esc(l)}</div><div class="v">${short_money(v)}</div></div></div>`
-		)
-		.join("")}</div></div>`;
+	const worth = g.cash + g.loans_out;
+	const line = (label, value, cls = "", route) =>
+		`<div class="hl ${cls}" ${route ? route_attr(route) : ""}><span>${esc(label)}</span><b>${value}</b></div>`;
+	const cashPct = worth ? (g.cash / worth) * 100 : 0;
+	return `<div>${sec("⚖️", __("Gat ka Hisaab"))}
+		<div class="hisaab">
+			<div class="box hcard">
+				<div class="hstep">1</div><h4>${esc(__("What the Gat earned"))}</h4>
+				${line(__("Interest from loans"), "+ " + money(g.interest), "plus")}
+				${line(__("Late fines"), "+ " + money(g.fines), "plus")}
+				${g.opening_earnings ? line(__("Earned before the app"), "+ " + money(g.opening_earnings), "plus") : ""}
+				${line(__("Minus group expenses") + " →", "− " + money(g.expense), "minus link", ["List", "Group Expense"])}
+				<div class="hdiv"></div>
+				${line(__("Earnings after expenses"), money(g.earnings), "tot")}
+				<p class="hnote">${esc(__("Expenses are taken out of the earnings, never out of anyone's savings."))}</p>
+			</div>
+			<div class="box hcard">
+				<div class="hstep">2</div><h4>${esc(__("Total money of the Gat"))}</h4>
+				${line(__("Members' savings"), money(g.savings))}
+				${line(__("Earnings after expenses"), "+ " + money(g.earnings), "plus")}
+				${g.exits ? line(__("Paid to members who left"), "− " + money(g.exits), "minus") : ""}
+				<div class="hdiv"></div>
+				<div class="hworth">${money(g.savings + g.earnings - g.exits)}</div>
+			</div>
+			<div class="box hcard">
+				<div class="hstep">3</div><h4>${esc(__("Where this money is now"))}</h4>
+				<div class="hsplit"><span style="width:${cashPct}%;background:#22c55e"></span><span style="width:${100 - cashPct}%;background:#f59e0b"></span></div>
+				${line("🟩 " + __("With the group (bank / UPI)"), money(g.cash), "", ["query-report", "Group Balance"])}
+				${line("🟧 " + __("With members as loans") + " →", money(g.loans_out), "link", ["List", "Loan"], )}
+				<div class="hdiv"></div>
+				${line(__("Total"), money(worth), "tot")}
+				<div class="hok ${Math.round(worth) === Math.round(g.savings + g.earnings - g.exits) ? "" : "bad"}">${
+					Math.round(worth) === Math.round(g.savings + g.earnings - g.exits)
+						? "✓ " + esc(__("Both totals match. The account is correct."))
+						: "⚠ " + esc(__("Totals do not match. Please tell the treasurer."))
+				}</div>
+			</div>
+		</div></div>`;
 }
 
 // ------------------------------------------------------------------ office bearers
