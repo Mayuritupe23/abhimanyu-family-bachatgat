@@ -19,17 +19,30 @@ const busy = ref(false);
 const done = ref(null);
 const pay = store.boot?.pay || {};
 const monthDate = computed(() => `${month.value}-01`);
+// 'hapta' = the month's payment; 'extra' = more loan repaid for a month already paid (till the 15th)
+const mode = ref('hapta');
+const extraInfo = ref(null);
 
 let timer;
 async function refresh() {
   error.value = '';
   try {
-    p.value = await m('pay_preview', { month: monthDate.value, payment_date: todayISO(), principals: { ...principal } });
+    p.value = mode.value === 'extra'
+      ? await m('extra_preview', { month: monthDate.value, principals: { ...principal } })
+      : await m('pay_preview', { month: monthDate.value, payment_date: todayISO(), principals: { ...principal } });
     (p.value.loans || []).forEach((l) => { if (!(l.loan in principal)) principal[l.loan] = 0; });
   } catch (e) { error.value = e.message; }
 }
 onMounted(refresh);
-watch(month, () => { Object.keys(principal).forEach((k) => delete principal[k]); step.value = 1; refresh(); });
+watch(month, () => { Object.keys(principal).forEach((k) => delete principal[k]); step.value = 1; mode.value = 'hapta'; refresh(); });
+function startExtra() {
+  extraInfo.value = p.value;
+  mode.value = 'extra';
+  step.value = 1;
+  Object.keys(principal).forEach((k) => delete principal[k]);
+  p.value = null;
+  refresh();
+}
 watch(principal, () => { clearTimeout(timer); timer = setTimeout(refresh, 350); }, { deep: true });
 
 const loans = computed(() => p.value?.loans || []);
@@ -61,9 +74,10 @@ async function submit() {
   error.value = '';
   try {
     const file_url = await upload(await shrink(shot.value));
-    done.value = await m('submit_payment', {
-      month: monthDate.value, payment_date: todayISO(), screenshot: file_url, principals: { ...principal }, utr: utr.value || undefined,
-    });
+    const args = { month: monthDate.value, screenshot: file_url, principals: { ...principal }, utr: utr.value || undefined };
+    done.value = mode.value === 'extra'
+      ? await m('submit_extra', args)
+      : await m('submit_payment', { ...args, payment_date: todayISO() });
   } catch (e) { error.value = e.message; } finally { busy.value = false; }
 }
 const steps = ['Amount', 'Pay', 'Proof'];
@@ -97,8 +111,20 @@ const steps = ['Amount', 'Pay', 'Proof'];
       <h3>{{ rupee(p.existing.total) }}</h3>
       <p class="muted">{{ monthName(monthDate) }} · {{ t('Paid on') }} {{ day(p.existing.payment_date) }}</p>
       <p class="muted small">{{ t('Already sent for this month') }}. {{ t('Pick another month above if you are paying an old one.') }}</p>
+      <div v-for="x in p.extras" :key="x.name" class="extra-line">
+        <span>+ {{ t('Extra EMI') }} · {{ day(x.payment_date) }}</span>
+        <b>{{ rupee(x.principal) }}</b>
+        <span class="pill" :class="x.docstatus === 1 ? 'green' : 'blue'">{{ x.docstatus === 1 ? t('Paid') : t('Sent') }}</span>
+      </div>
+      <button v-if="p.extra_open" class="btn" @click="startExtra">+ {{ t('Repay more loan this month') }}</button>
+      <p v-if="p.extra_open" class="muted small">{{ t('Allowed till') }} {{ day(p.due_date) }}. {{ t('It lowers next month\'s interest.') }}</p>
       <router-link to="/khata" class="btn ghost">{{ t('My Khata') }}</router-link>
     </section>
+
+    <div v-if="mode === 'extra'" class="card extra-head">
+      <b>{{ t('Extra EMI') }} · {{ monthName(monthDate) }}</b>
+      <span class="muted small">{{ t('Only loan repayment. Saving and interest are already in this month\'s hapta.') }}</span>
+    </div>
 
     <template v-if="p && !p.existing">
       <ol class="steps">
@@ -109,7 +135,7 @@ const steps = ['Amount', 'Pay', 'Proof'];
 
       <!-- 1: how much -->
       <template v-if="step === 1">
-        <section class="card bill">
+        <section v-if="mode === 'hapta'" class="card bill">
           <div class="line"><span>{{ t('Saving') }}</span><b>{{ rupee(p.saving) }}</b></div>
           <div v-if="p.interest" class="line"><span>{{ t('Loan interest') }}</span><b>{{ rupee(p.interest) }}</b></div>
           <div v-if="p.principal" class="line"><span>{{ t('Loan repayment (EMI)') }}</span><b>{{ rupee(p.principal) }}</b></div>
@@ -119,8 +145,8 @@ const steps = ['Amount', 'Pay', 'Proof'];
         </section>
 
         <section v-if="loans.length" class="card emi">
-          <b>{{ t('Want to repay some loan too?') }}</b>
-          <p class="muted small">{{ t('Optional. Whatever you repay lowers next month\'s interest.') }}</p>
+          <b>{{ mode === 'extra' ? t('How much loan do you want to repay?') : t('Want to repay some loan too?') }}</b>
+          <p class="muted small">{{ mode === 'extra' ? t('Whatever you repay lowers next month\'s interest.') : t('Optional. Whatever you repay lowers next month\'s interest.') }}</p>
           <div v-for="l in loans" :key="l.loan" class="loan">
             <div class="row small"><span class="grow muted">{{ t('Loan left') }}</span><b>{{ rupee(l.outstanding) }}</b></div>
             <div class="money"><span>₹</span><input v-model.number="principal[l.loan]" type="number" inputmode="numeric" min="0" :max="l.outstanding" placeholder="0" /></div>
@@ -133,7 +159,7 @@ const steps = ['Amount', 'Pay', 'Proof'];
           <button v-else class="btn ghost small" @click="clearEmi">{{ t('Not now') }}</button>
         </section>
 
-        <button class="btn" @click="step = 2">{{ t('Next') }}: {{ t('Pay') }} {{ rupee(p.total) }} →</button>
+        <button class="btn" :disabled="mode === 'extra' && !p.total" @click="step = 2">{{ t('Next') }}: {{ t('Pay') }} {{ rupee(p.total) }} →</button>
       </template>
 
       <!-- 2: pay. On a phone the QR cannot be scanned from the same screen, so the UPI app is
@@ -230,6 +256,9 @@ const steps = ['Amount', 'Pay', 'Proof'];
 .shot span { display: flex; flex-direction: column; align-items: center; gap: 8px; font-weight: 700; }
 .shot img { width: 100%; max-height: 340px; object-fit: contain; }
 .already { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.extra-line { width: 100%; display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 10px; background: var(--soft); font-size: 13px; }
+.extra-line span:first-child { flex: 1; text-align: left; }
+.extra-head { background: #fffbeb; border-color: #fde68a; display: flex; flex-direction: column; gap: 2px; }
 .already h3 { margin: 6px 0 0; font-size: 30px; }
 .already p { margin: 0; }
 .already .btn { margin-top: 10px; }

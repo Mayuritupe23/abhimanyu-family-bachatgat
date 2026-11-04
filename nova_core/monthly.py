@@ -26,10 +26,22 @@ def get_sheet(month=None):
 		p.member: p
 		for p in frappe.get_all(
 			"Monthly Payment",
-			filters={"month": month, "docstatus": ["<", 2]},
+			filters={"month": month, "docstatus": ["<", 2], "is_extra": 0},
 			fields=["name", "member", "docstatus", "saving", "interest", "principal", "fine", "total", "payment_date", "payment_mode", "screenshot"],
 		)
 	}
+	# extra EMI sent later in the month: approved ones count in the month's EMI, pending ones wait
+	extra_paid, extra_waiting = {}, {}
+	for x in frappe.get_all(
+		"Monthly Payment",
+		filters={"month": month, "docstatus": ["<", 2], "is_extra": 1},
+		fields=["name", "member", "docstatus", "principal", "payment_date", "screenshot"],
+		order_by="payment_date",
+	):
+		if x.docstatus == 1:
+			extra_paid[x.member] = extra_paid.get(x.member, 0) + flt(x.principal)
+		else:
+			extra_waiting.setdefault(x.member, []).append(x)
 	opening_rows = {}
 	for r in frappe.get_all(
 		"Monthly Payment Loan",
@@ -55,7 +67,12 @@ def get_sheet(month=None):
 				total=0, payment=None, state="pending", payment_date=None, payment_mode=None,
 			)
 		# like the group's sheets: loans given after the collection show up in next month's opening
-		row.update(no=i, member=m.name, member_name=m.member_name, loan=opening, balance=opening - row["emi"])
+		extra = extra_paid.get(m.name, 0)
+		row.update(
+			no=i, member=m.name, member_name=m.member_name, loan=opening, extra=extra,
+			extra_waiting=extra_waiting.get(m.name, []),
+			emi=row["emi"] + extra, total=row["total"] + extra, balance=opening - row["emi"] - extra,
+		)
 		rows.append(row)
 
 	return {

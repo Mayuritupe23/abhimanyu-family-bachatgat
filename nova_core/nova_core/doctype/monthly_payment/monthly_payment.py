@@ -18,22 +18,38 @@ class MonthlyPayment(Document):
 			frappe.throw(_("Member is not active"))
 
 		self.month = get_first_day(self.month)
-		if frappe.db.exists(
+		if self.get("is_extra"):
+			self.validate_extra()
+		elif frappe.db.exists(
 			"Monthly Payment",
-			{"member": self.member, "month": self.month, "docstatus": ["<", 2], "name": ["!=", self.name]},
+			{"member": self.member, "month": self.month, "docstatus": ["<", 2], "is_extra": 0, "name": ["!=", self.name]},
 		):
 			frappe.throw(_("Payment for this month already exists"))
-		# members pay by PhonePe and send proof; approvers entering a cash payment need none
+		# members pay by UPI and send proof; approvers entering a payment for someone need none
 		if not self.screenshot and "Khajinadar" not in frappe.get_roles():
 			frappe.throw(_("Please attach the payment screenshot"))
 		self.calculate()
 
+	def validate_extra(self):
+		"""Extra EMI: more loan repaid in a month whose hapta is already sent, up to the due date."""
+		s = get_settings()
+		if not frappe.db.exists(
+			"Monthly Payment", {"member": self.member, "month": self.month, "is_extra": 0, "docstatus": ["<", 2]}
+		):
+			frappe.throw(_("Send this month's hapta first, then add extra EMI"))
+		if date_diff(self.payment_date, due_date(self.month, s.due_day)) > 0:
+			frappe.throw(_("Extra EMI for a month can be paid only till the {0}th").format(s.due_day))
+
 	def calculate(self):
 		s = get_settings()
-		self.saving = s.monthly_saving
-		self.days_late = max(date_diff(self.payment_date, due_date(self.month, s.due_day)), 0)
-		self.fine = calc_fine(self.days_late, s.late_fine_first_day, s.late_fine_per_day)
-		self.set_loan_rows(s.interest_rate)
+		extra = self.get("is_extra")
+		# an extra EMI is only loan principal: the month's saving, interest and fine are on the hapta
+		self.saving = 0 if extra else s.monthly_saving
+		self.days_late = 0 if extra else max(date_diff(self.payment_date, due_date(self.month, s.due_day)), 0)
+		self.fine = 0 if extra else calc_fine(self.days_late, s.late_fine_first_day, s.late_fine_per_day)
+		self.set_loan_rows(0 if extra else s.interest_rate)
+		if extra and not any(flt(r.principal) for r in self.loans):
+			frappe.throw(_("Enter the extra amount to repay"))
 
 		self.interest = sum(flt(r.interest) for r in self.loans)
 		self.principal = sum(flt(r.principal) for r in self.loans)
@@ -76,14 +92,21 @@ class MonthlyPayment(Document):
 
 
 @frappe.whitelist()
-def preview(member, month, payment_date, principals=None):
+def preview(member, month, payment_date, principals=None, is_extra=0):
 	"""Live totals for the form: what this member has to pay for the month."""
 	check_own_member(member)
 	doc = frappe.new_doc("Monthly Payment")
-	doc.update({"member": member, "month": get_first_day(month), "payment_date": payment_date})
+	doc.update({"member": member, "month": get_first_day(month), "payment_date": payment_date, "is_extra": int(is_extra or 0)})
 	for loan, amount in json.loads(principals or "{}").items():
 		doc.append("loans", {"loan": loan, "principal": amount})
-	doc.calculate()
+	if doc.is_extra:
+		# no "enter an amount" error here: the preview runs before anything is typed
+		doc.set_loan_rows(0)
+		doc.update({"saving": 0, "interest": 0, "fine": 0, "days_late": 0})
+		doc.principal = sum(flt(r.principal) for r in doc.loans)
+		doc.total = doc.principal
+	else:
+		doc.calculate()
 	return {
 		"month": doc.month,
 		"loans": [r.as_dict() for r in doc.loans],

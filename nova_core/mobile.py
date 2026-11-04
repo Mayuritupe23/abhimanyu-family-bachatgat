@@ -5,7 +5,7 @@ import json
 
 import frappe
 from frappe import _
-from frappe.utils import flt, get_first_day, today
+from frappe.utils import flt, get_first_day, getdate, today
 
 from nova_core.dashboard import get_dashboard
 from nova_core.gat import current_member, get_settings, sees_all
@@ -54,12 +54,47 @@ def pay_preview(month=None, payment_date=None, principals=None):
 	member = current_member().name
 	month = get_first_day(month or today())
 	existing = frappe.db.get_value(
-		"Monthly Payment", {"member": member, "month": month, "docstatus": ["<", 2]},
+		"Monthly Payment", {"member": member, "month": month, "docstatus": ["<", 2], "is_extra": 0},
 		["name", "docstatus", "total", "payment_date"], as_dict=True,
 	)
 	if existing:
-		return {"existing": existing, "month": month}
+		s = get_settings()
+		from nova_core.gat import due_date
+
+		due = due_date(month, s.due_day)
+		has_loan = frappe.db.exists("Loan", {"member": member, "status": "Active", "disbursed_on": ["<", month]})
+		extras = frappe.get_all(
+			"Monthly Payment", {"member": member, "month": month, "is_extra": 1, "docstatus": ["<", 2]},
+			["name", "docstatus", "principal", "payment_date"], order_by="payment_date",
+		)
+		return {
+			"existing": existing, "month": month, "due_date": due, "extras": extras,
+			# more loan can be repaid for this month until its due date
+			"extra_open": bool(has_loan) and getdate(today()) <= getdate(due),
+		}
 	return preview(member, month, payment_date or today(), principals)
+
+
+@frappe.whitelist()
+def extra_preview(month, principals=None):
+	from nova_core.nova_core.doctype.monthly_payment.monthly_payment import preview
+
+	return preview(current_member().name, month, today(), principals, is_extra=1)
+
+
+@frappe.whitelist()
+def submit_extra(month, screenshot, principals, utr=None):
+	"""Member sends extra loan repayment for a month already paid (till the due date)."""
+	doc = frappe.new_doc("Monthly Payment")
+	doc.update({
+		"member": current_member().name, "month": get_first_day(month), "payment_date": today(),
+		"payment_mode": "UPI", "utr": utr, "screenshot": screenshot, "is_extra": 1,
+	})
+	for loan, amount in json.loads(principals or "{}").items():
+		if flt(amount):
+			doc.append("loans", {"loan": loan, "principal": flt(amount)})
+	doc.insert()
+	return {"name": doc.name, "total": doc.total}
 
 
 @frappe.whitelist()
@@ -84,8 +119,8 @@ def passbook():
 	rows = frappe.get_all(
 		"Monthly Payment",
 		filters={"member": member.name, "docstatus": ["<", 2]},
-		fields=["name", "month", "payment_date", "saving", "interest", "principal", "fine", "total", "docstatus", "screenshot"],
-		order_by="month desc",
+		fields=["name", "month", "payment_date", "saving", "interest", "principal", "fine", "total", "docstatus", "screenshot", "is_extra"],
+		order_by="month desc, is_extra, payment_date",
 	)
 	paid = [r for r in rows if r.docstatus == 1]
 	return {

@@ -11,6 +11,7 @@
   "member",
   "member_name",
   "month",
+  "is_extra",
   "payment_date",
   "payment_mode",
   "pay_here",
@@ -155,13 +156,22 @@
    "fieldname": "pay_here",
    "fieldtype": "HTML",
    "label": "Pay Here"
+  },
+  {
+   "default": "0",
+   "description": "Extra loan repayment in the same month, sent after the month's hapta (allowed till the due date)",
+   "fieldname": "is_extra",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Extra EMI",
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-11-04 12:00:00.000000",
+ "modified": "2026-11-04 12:32:22.070080",
  "modified_by": "Administrator",
  "module": "Nova Core",
  "name": "Monthly Payment",

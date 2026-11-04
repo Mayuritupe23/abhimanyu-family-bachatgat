@@ -73,6 +73,11 @@ const MR = {
   'Saving…': 'सेव्ह होत आहे…', 'Current password is wrong.': 'सध्याचा पासवर्ड चुकीचा आहे.',
   'Password changed. Please sign in with the new password.': 'पासवर्ड बदलला. नवीन पासवर्डने लॉगिन करा.',
   'This password is too easy to guess. Try a name with a number, like Pooja@1990.': 'हा पासवर्ड खूप सोपा आहे. नाव आणि आकडा वापरा, उदा. Pooja@1990.',
+  'Extra EMI': 'जादा EMI', 'Repay more loan this month': 'या महिन्यात आणखी कर्ज फेडा', 'Allowed till': 'या तारखेपर्यंत',
+  "It lowers next month's interest.": 'त्यामुळे पुढील महिन्याचे व्याज कमी होते.',
+  "Only loan repayment. Saving and interest are already in this month's hapta.": 'फक्त कर्ज परतफेड. बचत आणि व्याज या महिन्याच्या हप्त्यात आहे.',
+  'How much loan do you want to repay?': 'किती कर्ज फेडायचे?', "Whatever you repay lowers next month's interest.": 'जितके फेडाल तितके पुढील महिन्याचे व्याज कमी.',
+  'Only loan repayment': 'फक्त कर्ज परतफेड',
   'Install AFBG on your phone': 'AFBG फोनवर इंस्टॉल करा', Install: 'इंस्टॉल', 'Open Monthly Sheet': 'मासिक शीट उघडा',
 };
 

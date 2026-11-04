@@ -24,9 +24,9 @@ onMounted(async () => { try { d.value = await m('passbook'); } catch (e) { error
       <div v-if="!d.rows.length" class="empty"><span>📒</span>{{ t('No payments yet') }}</div>
       <article v-for="r in d.rows" :key="r.name" class="card entry" @click="open = open === r.name ? null : r.name">
         <div class="row">
-          <div class="cal"><b>{{ monthName(r.month, false).slice(0, 3) }}</b><small>{{ String(r.month).slice(2, 4) }}</small></div>
+          <div class="cal" :class="{ x: r.is_extra }"><b>{{ r.is_extra ? '+' : monthName(r.month, false).slice(0, 3) }}</b><small>{{ String(r.month).slice(2, 4) }}</small></div>
           <div class="grow">
-            <b>{{ monthName(r.month) }}</b>
+            <b>{{ r.is_extra ? t('Extra EMI') : monthName(r.month) }}</b>
             <div class="muted small">{{ t('Paid on') }} {{ day(r.payment_date) }}</div>
           </div>
           <div class="end">
@@ -54,6 +54,7 @@ onMounted(async () => { try { d.value = await m('passbook'); } catch (e) { error
 .sum span { font-size: 12.5px; opacity: .9; font-weight: 600; } .sum b { font-size: 34px; font-weight: 800; } .sum small { opacity: .85; }
 .entry { padding: 12px 14px; cursor: pointer; }
 .cal { width: 46px; height: 46px; flex: none; border-radius: 12px; background: var(--soft); display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; }
+.cal.x { background: #fffbeb; color: #b45309; }
 .cal b { font-size: 13px; } .cal small { color: var(--muted); font-size: 11px; }
 .end { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
 .more { margin-top: 8px; border-top: 1px solid var(--line); padding-top: 4px; }

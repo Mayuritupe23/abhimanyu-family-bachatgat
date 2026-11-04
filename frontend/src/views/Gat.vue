@@ -33,7 +33,14 @@ function shift(n) {
 const isCurrent = computed(() => month.value === todayISO().slice(0, 8) + '01');
 
 const rows = computed(() => d.value?.rows || []);
-const sent = computed(() => rows.value.filter((r) => r.state === 'draft'));
+// to check: hapta sent by members, plus extra EMI sent later in the month
+const sent = computed(() => [
+  ...rows.value.filter((r) => r.state === 'draft').map((r) => ({ ...r, key: r.member })),
+  ...rows.value.flatMap((r) => (r.extra_waiting || []).map((x) => ({
+    key: x.name, extra: true, member: r.member, member_name: r.member_name, payment: x.name, payment_date: x.payment_date,
+    screenshot: x.screenshot, total: x.principal, emi: x.principal, saving: 0, interest: 0, fine: 0,
+  }))),
+]);
 const pending = computed(() => rows.value.filter((r) => r.state === 'pending'));
 const paid = computed(() => rows.value.filter((r) => r.state === 'paid'));
 const loanWork = computed(() => (lg.value?.rows || []).filter((l) => ['Applied', 'Approved'].includes(l.status)));
@@ -70,8 +77,8 @@ async function act(fn, args, key) {
     if (res && res.rows) d.value = res; else await load();
   } catch (e) { error.value = e.message; } finally { busy.value = ''; }
 }
-const approve = (r) => act('approve', { payment: r.payment }, r.member);
-const sendBack = (r) => confirm(`${r.member_name}: ${t('Send back')}?`) && act('reject', { payment: r.payment }, r.member);
+const approve = (r) => act('approve', { payment: r.payment }, r.key);
+const sendBack = (r) => confirm(`${r.member_name}: ${t('Send back')}?`) && act('reject', { payment: r.payment }, r.key);
 // member paid on UPI but did not send it in the app: the approver enters it after checking the bank
 function markPaid(r) {
   const emi = r.loan ? prompt(`${r.member_name} · ${t('EMI')} (${t('Left')} ${rupee(r.loan)})`, '0') : '0';
@@ -111,17 +118,18 @@ function markPaid(r) {
       <div v-if="!shown.length && filter !== 'loans'" class="card empty"><span>🎉</span>{{ filter === 'sent' ? t('All payments approved') : filter === 'pending' ? t('Everyone has paid') : t('No payments yet') }}</div>
 
       <!-- sent by members: check and approve -->
-      <article v-for="r in filter === 'sent' ? shown : []" :key="r.member" class="card">
+      <article v-for="r in filter === 'sent' ? shown : []" :key="r.key" class="card">
         <div class="row">
           <div class="av">{{ initials(r.member_name) }}</div>
-          <div class="grow"><b>{{ r.member_name }}</b><div class="muted small">{{ day(r.payment_date) }}</div></div>
+          <div class="grow"><b>{{ r.member_name }}</b><div class="muted small">{{ day(r.payment_date) }}<span v-if="r.extra" class="pill orange xtag">{{ t('Extra EMI') }}</span></div></div>
           <b>{{ rupee(r.total) }}</b>
         </div>
-        <div class="muted small parts">{{ t('Saving') }} {{ rupee(r.saving) }}<template v-if="r.interest"> · {{ t('Interest') }} {{ rupee(r.interest) }}</template><template v-if="r.emi"> · {{ t('EMI') }} {{ rupee(r.emi) }}</template><template v-if="r.fine"> · {{ t('Fine') }} {{ rupee(r.fine) }}</template></div>
-        <img v-if="r.screenshot" :src="r.screenshot" class="shot" :class="{ open: big === r.member }" alt="" @click="big = big === r.member ? '' : r.member" />
+        <div v-if="r.extra" class="muted small parts">{{ t('Only loan repayment') }} · {{ t('EMI') }} {{ rupee(r.emi) }}</div>
+        <div v-else class="muted small parts">{{ t('Saving') }} {{ rupee(r.saving) }}<template v-if="r.interest"> · {{ t('Interest') }} {{ rupee(r.interest) }}</template><template v-if="r.emi"> · {{ t('EMI') }} {{ rupee(r.emi) }}</template><template v-if="r.fine"> · {{ t('Fine') }} {{ rupee(r.fine) }}</template></div>
+        <img v-if="r.screenshot" :src="r.screenshot" class="shot" :class="{ open: big === r.key }" alt="" @click="big = big === r.key ? '' : r.key" />
         <div class="acts">
-          <button class="btn small ghost" :disabled="busy === r.member" @click="sendBack(r)">{{ t('Send back') }}</button>
-          <button class="btn small" :disabled="busy === r.member" @click="approve(r)">✓ {{ t('Approve') }}</button>
+          <button class="btn small ghost" :disabled="busy === r.key" @click="sendBack(r)">{{ t('Send back') }}</button>
+          <button class="btn small" :disabled="busy === r.key" @click="approve(r)">✓ {{ t('Approve') }}</button>
         </div>
       </article>
 
@@ -199,6 +207,7 @@ function markPaid(r) {
 .chips button.on b { background: #fbbf24; color: #451a03; }
 .chips button.hot:not(.on) b { background: var(--red); color: #fff; }
 .parts { margin-top: 8px; }
+.xtag { margin-left: 6px; }
 .shot { margin-top: 10px; width: 100%; max-height: 150px; object-fit: cover; border-radius: 12px; border: 1px solid var(--line); }
 .shot.open { max-height: none; object-fit: contain; }
 .acts { display: grid; grid-template-columns: 1fr 1.3fr; gap: 10px; margin-top: 12px; }
