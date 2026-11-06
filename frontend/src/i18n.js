@@ -92,6 +92,7 @@ const MR = {
   'Remove profile photo?': 'प्रोफाइल फोटो काढायचा?', 'Uploading…': 'अपलोड होत आहे…', 'Tap the photo to change it': 'बदलण्यासाठी फोटोवर टॅप करा',
   'Tap the circle to add your photo': 'फोटो जोडण्यासाठी गोलावर टॅप करा', Remove: 'काढा',
   Adhyaksh: 'अध्यक्ष', Upadhyaksh: 'उपाध्यक्ष', Sachiv: 'सचिव', Sahsachiv: 'सहसचिव', Khajinadar: 'खजिनदार', Member: 'सभासद', Shareholder: 'भागधारक',
+  Share: 'शेअर', Image: 'इमेज',
   'Install the Bachat Gat app on your phone': 'बचत गट ॲप फोनवर इंस्टॉल करा', Install: 'इंस्टॉल', 'Open Monthly Sheet': 'मासिक शीट उघडा',
 };
 

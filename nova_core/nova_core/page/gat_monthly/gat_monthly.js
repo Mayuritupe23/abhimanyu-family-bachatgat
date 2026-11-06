@@ -224,6 +224,7 @@ class GatMonthly {
 			<div class="gm-actions">
 				<button class="gm-btn" data-image="copy">📋 ${__("Copy image for WhatsApp")}</button>
 				<button class="gm-btn ghost" data-image="download">⬇ ${__("Download image")}</button>
+				<button class="gm-btn ghost" data-image="csv">📊 ${__("Download Excel")}</button>
 			</div>
 			<div class="gm-card gm-sheet">
 				<div class="gm-sheet-title">${esc(spec.title)}</div>
@@ -337,14 +338,16 @@ class GatMonthly {
 		c.textAlign = "left";
 		c.fillText(spec.note, pad, y + 26);
 		c.textAlign = "right";
-		c.fillText("Abhimanyu Bachat Gat", width - pad, y + 26);
+		c.fillText("Abhimanyu Family Bachat Gat", width - pad, y + 26);
 		return cv;
 	}
 
 	image(how) {
 		const spec = this.tab === "statement" ? this.statement_spec() : this.demand_spec();
+		const name = `${this.tab === "statement" ? "statement" : "paise-bharna"}-${this.month.format("YYYY-MM")}`;
+		if (how === "csv") return this.download(this.csv(spec), `${name}.csv`);
 		const cv = this.canvas(spec);
-		const file = `${this.tab === "statement" ? "statement" : "paise-bharna"}-${this.month.format("YYYY-MM")}.png`;
+		const file = `${name}.png`;
 		cv.toBlob((blob) => {
 			if (how === "copy" && navigator.clipboard && window.ClipboardItem) {
 				navigator.clipboard
@@ -355,6 +358,17 @@ class GatMonthly {
 				this.download(blob, file);
 			}
 		});
+	}
+
+	// Excel opens CSV directly; the BOM makes it read the Marathi text as UTF-8
+	csv(spec) {
+		const cell = (v) => {
+			const s = String(v ?? "");
+			return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+		};
+		const lines = [[spec.title], spec.subtitle ? [spec.subtitle] : null, spec.meta ? [spec.meta.join(" | ")] : null, [],
+			spec.cols.map((c) => c[0]), ...spec.rows, spec.total, [], [spec.note]].filter(Boolean);
+		return new Blob(["\ufeff" + lines.map((l) => l.map(cell).join(",")).join("\r\n")], { type: "text/csv;charset=utf-8" });
 	}
 
 	download(blob, file) {

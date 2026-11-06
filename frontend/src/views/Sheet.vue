@@ -6,6 +6,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import Icon from '../components/Icon.vue';
 import { m } from '../api.js';
+import { csvBlob, demandSpec, imageBlob, saveFile, shareImage, statementSpec } from '../sheetExport.js';
 import { t } from '../i18n.js';
 import { monthName, rupee, todayISO } from '../util.js';
 
@@ -53,6 +54,19 @@ const stTotals = computed(() => {
     balance: rows.value.reduce((a, r) => a + (paid(r) ? r.balance : r.loan), 0),
   };
 });
+// download / share the sheet that is on screen
+const busyExport = ref('');
+const spec = () => (tab.value === 'statement' ? statementSpec(d.value) : demandSpec(d.value));
+async function exportAs(kind) {
+  busyExport.value = kind;
+  try {
+    const s = spec();
+    if (kind === 'share') await shareImage(s);
+    else if (kind === 'image') saveFile(await imageBlob(s), `${s.file}.png`);
+    else saveFile(csvBlob(s), `${s.file}.csv`);
+  } finally { busyExport.value = ''; }
+}
+const canShare = typeof navigator !== 'undefined' && !!navigator.canShare;
 const notPaid = computed(() => rows.value.filter((r) => !paid(r)).map((r) => r.member_name.split(' ')[0]));
 </script>
 
@@ -70,6 +84,12 @@ const notPaid = computed(() => rows.value.filter((r) => !paid(r)).map((r) => r.m
 
     <div v-if="error" class="error">{{ error }}</div>
     <div v-if="!d && !error" class="skeleton" />
+
+    <div v-if="d" class="exports">
+      <button v-if="canShare" class="ex share" :disabled="!!busyExport" @click="exportAs('share')"><Icon name="share" :size="18" />{{ t('Share') }}</button>
+      <button class="ex" :disabled="!!busyExport" @click="exportAs('image')"><Icon name="image" :size="18" />{{ t('Image') }}</button>
+      <button class="ex" :disabled="!!busyExport" @click="exportAs('csv')"><Icon name="table" :size="18" />Excel</button>
+    </div>
 
     <template v-if="d && tab === 'demand'">
       <p class="muted small note">{{ t('What each member has to pay this month') }} · {{ t('Interest') }} {{ d.interest_rate }}% · {{ t('Last date') }} {{ d.due_date.slice(8, 10) }}</p>
@@ -122,6 +142,11 @@ const notPaid = computed(() => rows.value.filter((r) => !paid(r)).map((r) => r.m
 .seg button { border: 0; background: none; border-radius: 10px; padding: 10px; font-weight: 800; color: var(--muted); }
 .seg button.on { background: #14532d; color: #fff; }
 .note { margin: 0 2px; }
+.exports { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 8px; }
+.ex { display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--line); background: #fff; border-radius: 12px;
+  padding: 10px 6px; font-weight: 800; font-size: 13px; color: var(--ink); }
+.ex.share { background: #25d366; border-color: #25d366; color: #fff; }
+.ex:disabled { opacity: .5; }
 .ok { color: var(--g2); font-weight: 700; }
 .tablewrap { padding: 0; overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; font-size: 12.5px; white-space: nowrap; }
