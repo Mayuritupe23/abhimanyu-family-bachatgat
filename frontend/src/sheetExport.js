@@ -1,6 +1,8 @@
 // The month's two sheets as files, same layout as the desk's Monthly Sheet:
 //   Paise Bharna (what each member pays) and the month-end Statement.
-// Image = drawn on a canvas (no library); Excel = CSV with a BOM so Excel shows Marathi correctly.
+// Image = drawn on a canvas (no library); Excel = .xlsx made on the server (nova_core.excel).
+
+import { call } from './api.js';
 
 const MR_MONTHS = ['जानेवारी', 'फेब्रुवारी', 'मार्च', 'एप्रिल', 'मे', 'जून', 'जुलै', 'ऑगस्ट', 'सप्टेंबर', 'ऑक्टोबर', 'नोव्हेंबर', 'डिसेंबर'];
 const EN_MONTHS = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
@@ -145,15 +147,11 @@ export function drawMany(specs) {
 const list = (s) => (Array.isArray(s) ? s : [s]);
 export const imageBlob = (spec) => new Promise((resolve) => drawMany(list(spec)).toBlob(resolve, 'image/png'));
 
-export function csvBlob(spec) {
-  const cell = (v) => {
-    const s = String(v ?? '');
-    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-  };
-  const lines = list(spec).flatMap((sp, i) => [i ? [] : null, i ? [] : null, [sp.title], sp.subtitle ? [sp.subtitle] : null,
-    sp.meta ? [sp.meta.join(' | ')] : null, [], sp.cols.map((c) => c[0]), ...sp.rows, sp.total, [], [sp.note]].filter(Boolean));
-  // BOM so Excel opens the Marathi text as UTF-8
-  return new Blob(['﻿' + lines.map((l) => l.map(cell).join(',')).join('\r\n')], { type: 'text/csv;charset=utf-8' });
+// designed Excel (.xlsx) made on the server from the same specs, one tab per sheet
+export async function xlsxBlob(spec) {
+  const b64 = await call('nova_core.excel.sheet_xlsx', { specs: list(spec) });
+  const bytes = Uint8Array.from(atob(b64), (ch) => ch.charCodeAt(0));
+  return new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
 }
 
 export function saveFile(blob, name) {

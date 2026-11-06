@@ -358,7 +358,11 @@ class GatMonthly {
 				primary_action_label: "⬇ " + __("Download image"),
 				primary_action: () => this.download(blob, `${name}.png`),
 				secondary_action_label: "📊 " + __("Download Excel"),
-				secondary_action: () => this.download(this.csv(specs), `${name}.csv`),
+				secondary_action: () =>
+					frappe.xcall("nova_core.excel.sheet_xlsx", { specs }).then((b64) => {
+						const bytes = Uint8Array.from(atob(b64), (ch) => ch.charCodeAt(0));
+						this.download(new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }), `${name}.xlsx`);
+					}),
 			});
 			d.fields_dict.img.$wrapper.html(`<div style="max-height:65vh;overflow:auto;border:1px solid var(--border-color);border-radius:10px">
 				<img src="${url}" style="display:block;width:100%"></div>`);
@@ -393,17 +397,6 @@ class GatMonthly {
 			}
 		});
 		return out;
-	}
-
-	// Excel opens CSV directly; the BOM makes it read the Marathi text as UTF-8
-	csv(specs) {
-		const cell = (v) => {
-			const s = String(v ?? "");
-			return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-		};
-		const lines = specs.flatMap((sp, i) => [i ? [] : null, i ? [] : null, [sp.title], sp.subtitle ? [sp.subtitle] : null,
-			sp.meta ? [sp.meta.join(" | ")] : null, [], sp.cols.map((c) => c[0]), ...sp.rows, sp.total, [], [sp.note]].filter(Boolean));
-		return new Blob(["\ufeff" + lines.map((l) => l.map(cell).join(",")).join("\r\n")], { type: "text/csv;charset=utf-8" });
 	}
 
 	download(blob, file) {

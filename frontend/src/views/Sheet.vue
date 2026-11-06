@@ -6,7 +6,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import Icon from '../components/Icon.vue';
 import { m } from '../api.js';
-import { csvBlob, demandSpec, imageBlob, saveFile, shareImage, statementSpec } from '../sheetExport.js';
+import { demandSpec, imageBlob, saveFile, shareImage, statementSpec, xlsxBlob } from '../sheetExport.js';
 import { t } from '../i18n.js';
 import { monthName, rupee, todayISO } from '../util.js';
 
@@ -74,7 +74,9 @@ async function exportAs(kind) {
   try {
     if (kind === 'share') await shareImage(specs, name);
     else if (kind === 'image') saveFile(await imageBlob(specs), `${name}.png`);
-    else saveFile(csvBlob(specs), `${name}.csv`);
+    else saveFile(await xlsxBlob(specs), `${name}.xlsx`);
+  } catch (e) {
+    error.value = e.message;
   } finally { busyExport.value = ''; }
 }
 const canShare = typeof navigator !== 'undefined' && !!navigator.canShare;
