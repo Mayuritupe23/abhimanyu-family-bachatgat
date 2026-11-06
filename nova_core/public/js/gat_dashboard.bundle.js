@@ -48,21 +48,44 @@ const STYLE = `
 		background: radial-gradient(circle at 92% 0%, rgba(245,158,11,.55), transparent 38%),
 			linear-gradient(120deg, var(--g1) 0%, #15803d 45%, var(--g2) 100%);
 		box-shadow: 0 14px 34px rgba(20,83,45,.25); display: flex; align-items: center; justify-content: space-between; gap: 18px; }
-	.hero .rings { position: absolute; right: -60px; bottom: -80px; width: 260px; height: 260px; opacity: .14; pointer-events: none; }
-	.hero h1 { margin: 0; font-size: 24px; font-weight: 800; color: #fff; letter-spacing: -.2px; }
+	.hero .rings { position: absolute; right: -40px; bottom: -90px; width: 320px; height: 320px; opacity: .14; pointer-events: none; }
+	.hero h1 { margin: 0; font-size: 26px; font-weight: 800; color: #fff; letter-spacing: -.2px; }
 	.hero .sub { margin-top: 4px; font-size: 13px; opacity: .9; }
 	.chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 700; }
 	.chip.role { background: var(--sf); color: #451a03; margin-left: 8px; vertical-align: 4px; }
 	.chip.due { margin-top: 14px; background: rgba(255,255,255,.16); color: #fff; padding: 6px 12px; font-size: 12.5px; }
 	.chip.due.late { background: #fee2e2; color: #991b1b; }
-	.ring { position: relative; width: 104px; height: 104px; flex: none; }
+	.ring { position: relative; width: 132px; height: 132px; flex: none; margin-right: 10px; }
 	.ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
 	.ring .mid { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-	.ring .mid b { font-size: 22px; line-height: 1; }
+	.ring .mid b { font-size: 26px; line-height: 1; }
 	.ring .mid span { font-size: 10.5px; opacity: .9; margin-top: 3px; }
 	.refresh { position: absolute; top: 12px; right: 14px; border: 0; background: rgba(255,255,255,.18); color: #fff;
 		width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 15px; z-index: 1; }
 	.refresh:hover { background: rgba(255,255,255,.3); }
+
+	.brand { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; font-size: 12px; font-weight: 700; letter-spacing: .4px; opacity: .95; }
+	.brand img { width: 34px; height: 34px; border-radius: 10px; background: #fff; padding: 3px; }
+	.brand small { display: block; font-weight: 600; opacity: .85; letter-spacing: 0; }
+	.kpis { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+	.kpi { background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.18); border-radius: 14px; padding: 8px 14px; min-width: 130px; }
+	.kpi[data-route]:hover { background: rgba(255,255,255,.22); }
+	.kpi span { display: block; font-size: 11px; opacity: .85; font-weight: 600; }
+	.kpi b { font-size: 17px; font-weight: 800; white-space: nowrap; }
+
+	/* quick actions */
+	.quick { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
+	.qa { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 16px; background: var(--card); border: 1px solid var(--line);
+		transition: transform .15s, box-shadow .15s, border-color .15s; }
+	.qa:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(15,23,42,.08); border-color: transparent; }
+	.qa .qi { width: 40px; height: 40px; flex: none; border-radius: 12px; display: grid; place-items: center; font-size: 19px; background: var(--qa);
+		box-shadow: 0 6px 14px -6px var(--qs); }
+	.qa > div:last-child { min-width: 0; }
+	.qa b, .qa span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+	.qa b { font-size: 13.5px; line-height: 1.3; }
+	.qa span { font-size: 11px; color: var(--muted); }
+
+	.three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; align-items: start; }
 
 	/* section title */
 	.sec { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
@@ -207,7 +230,8 @@ const STYLE = `
 	.hsplit { display: flex; height: 10px; border-radius: 99px; overflow: hidden; background: var(--soft); margin-bottom: 6px; }
 	.hok { margin-top: 8px; padding: 8px 10px; border-radius: 10px; background: #dcfce7; color: #166534; font-weight: 700; font-size: 12px; }
 	.hok.bad { background: #fee2e2; color: #991b1b; }
-	@media (max-width: 1000px) { .hisaab { grid-template-columns: minmax(0, 1fr); } }
+	@media (max-width: 1200px) { .three { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .three > :last-child { grid-column: 1 / -1; } }
+	@media (max-width: 1000px) { .hisaab, .three { grid-template-columns: minmax(0, 1fr); } }
 	@media (max-width: 1000px) { .two { grid-template-columns: minmax(0, 1fr); } .wallet { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 	@media (max-width: 560px) {
 		.hero { flex-direction: column; align-items: flex-start; padding: 20px; }
@@ -233,21 +257,29 @@ function hero(d) {
 	const me = d.me;
 	const name = me ? me.member_name.split(" ")[0] : frappe.session.user_fullname;
 	const role = me && me.designation && me.designation !== "Shareholder" ? `<span class="chip role">${esc(__(me.designation))}</span>` : "";
+	const g = d.group;
 	const late = d.days_to_due < 0;
 	const due = late
 		? __("Last date {0} passed · fine is running", [user_date(d.due_date)])
 		: d.days_to_due === 0
 		? __("Today is the last date!")
 		: __("Last date {0} · {1} left", [user_date(d.due_date), days(d.days_to_due)]);
-	const g = d.group;
 	const pct = g.members ? g.paid_this_month / g.members : 0;
 	return `<div class="hero">
 		${RINGS}
 		<button class="refresh" data-refresh title="${esc(__("Refresh"))}">⟳</button>
 		<div>
+			<div class="brand"><img src="/assets/nova_core/images/emblem.svg" alt="">
+				<div>${esc(d.group_name || "Abhimanyu Bachat Gat")}<small>अभिमन्यू बचत गट · एकत्र बचत, एकत्र प्रगती</small></div></div>
 			<h1>${esc(__("Namaskar"))}, ${esc(name)} 🙏${role}</h1>
-			<div class="sub">${esc(d.group_name || "Abhimanyu Bachat Gat")} · ${esc(moment(d.month).format("MMMM YYYY"))}</div>
+			<div class="sub">${esc(moment(d.month).format("MMMM YYYY"))}</div>
 			<span class="chip due ${late ? "late" : ""}">📅 ${esc(due)}</span>
+			<div class="kpis">
+				<div class="kpi"><span>${esc(__("Total money of the Gat"))}</span><b>${money(g.savings + g.earnings - g.exits)}</b></div>
+				<div class="kpi"><span>${esc(__("Members' savings"))}</span><b>${money(g.savings)}</b></div>
+				<div class="kpi" ${route_attr(["List", "Loan"], { status: "Active" })}><span>${esc(__("With members as loans"))}</span><b>${money(g.loans_out)}</b></div>
+				<div class="kpi" ${route_attr(["query-report", "Group Balance"])}><span>${esc(__("With the group (bank / UPI)"))}</span><b>${money(g.cash)}</b></div>
+			</div>
 		</div>
 		<div class="ring" title="${esc(__("Members paid this month"))}">
 			<svg viewBox="0 0 42 42"><circle cx="21" cy="21" r="17" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="4"/>
@@ -256,6 +288,28 @@ function hero(d) {
 			<div class="mid"><b>${g.paid_this_month}/${g.members}</b><span>${esc(__("paid this month"))}</span></div>
 		</div>
 	</div>`;
+}
+
+// ------------------------------------------------------------------ quick actions
+
+function quick(d) {
+	const tiles = [
+		d.me && ["💸", __("Pay hapta"), __("This month's payment"), ["Form", "Monthly Payment", "new"], "#dcfce7", "#16a34a"],
+		["📋", __("Monthly Sheet"), __("Paise Bharna & Statement"), ["gat-monthly"], "#dbeafe", "#2563eb"],
+		d.me && ["📒", __("My Passbook"), __("Every entry of mine"), ["query-report", "Member Passbook"], "#fef3c7", "#d97706"],
+		d.me && ["🤝", __("Apply for loan"), __("Ask the Gat for a loan"), ["Form", "Loan", "new"], "#ffedd5", "#ea580c"],
+		["🏦", __("Loans"), __("All loans & votes"), ["List", "Loan"], "#ede9fe", "#7c3aed"],
+		["🧾", __("Expenses"), __("Group expenses"), ["List", "Group Expense"], "#fce7f3", "#db2777"],
+		d.is_admin && ["⏰", __("Pending Dues"), __("Who has not paid"), ["query-report", "Pending Dues"], "#fee2e2", "#dc2626"],
+		d.is_admin && ["⚖️", __("Group Balance"), __("Cash & bank"), ["query-report", "Group Balance"], "#cffafe", "#0891b2"],
+		d.is_admin && ["👥", __("Members"), __("All members"), ["List", "Member"], "#e0e7ff", "#4f46e5"],
+	].filter(Boolean);
+	return `<div class="quick">${tiles
+		.map(
+			([ic, t, sub, route, bg, sh]) => `<div class="qa" ${route_attr(route)} style="--qa:${bg};--qs:${sh}">
+			<div class="qi">${ic}</div><div><b>${esc(t)}</b><span>${esc(sub)}</span></div></div>`
+		)
+		.join("")}</div>`;
 }
 
 // ------------------------------------------------------------------ me
@@ -578,11 +632,10 @@ function charts(d, state) {
 // ------------------------------------------------------------------ render
 
 function draw(host, d, state) {
-	const parts = [hero(d)];
-	if (d.me) parts.push(`<div class="two">${bill(d)}${khata(d)}</div>`);
-	parts.push(wallet(d));
+	const parts = [hero(d), quick(d)];
+	if (d.me) parts.push(`<div class="three">${bill(d)}${khata(d)}${votes(d)}</div>`);
 	if (d.admin) parts.push(`<div class="two">${action_center(d, state)}${roster(d)}</div>`);
-	parts.push(d.me ? `<div class="two">${votes(d)}${charts(d, state)}</div>` : charts(d, state));
+	parts.push(wallet(d), charts(d, state));
 	host.innerHTML = parts.join("");
 }
 

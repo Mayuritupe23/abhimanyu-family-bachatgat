@@ -779,3 +779,16 @@ body[data-path="login"] {
    on hover has nothing to switch to. The sidebar already has search, notifications and the
    user menu. */
 #desk-dock { display: none !important; }
+
+/* Gat home: use the full width and let the dashboard cards sit on the page, not inside
+   one more white box. */
+[id="page-Workspaces"] .layout-main {
+	max-width: 1400px !important;
+}
+[id="page-Workspaces"] .layout-main-section,
+[id="page-Workspaces"] .custom-block-widget-box {
+	background: transparent !important;
+	border: 0 !important;
+	box-shadow: none !important;
+	padding: 0 !important;
+}
