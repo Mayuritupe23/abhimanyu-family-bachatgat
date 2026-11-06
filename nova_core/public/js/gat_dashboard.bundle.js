@@ -75,6 +75,7 @@ const STYLE = `
 
 	/* quick actions */
 	.quick { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
+	.quick.many { grid-template-columns: repeat(auto-fill, minmax(205px, 1fr)); }
 	.qa { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 16px; background: var(--card); border: 1px solid var(--line);
 		transition: transform .15s, box-shadow .15s, border-color .15s; }
 	.qa:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(15,23,42,.08); border-color: transparent; }
@@ -304,7 +305,7 @@ function quick(d) {
 		d.is_admin && ["⚖️", __("Group Balance"), __("Cash & bank"), ["query-report", "Group Balance"], "#cffafe", "#0891b2"],
 		d.is_admin && ["👥", __("Members"), __("All members"), ["List", "Member"], "#e0e7ff", "#4f46e5"],
 	].filter(Boolean);
-	return `<div class="quick">${tiles
+	return `<div class="quick ${tiles.length > 6 ? "many" : ""}">${tiles
 		.map(
 			([ic, t, sub, route, bg, sh]) => `<div class="qa" ${route_attr(route)} style="--qa:${bg};--qs:${sh}">
 			<div class="qi">${ic}</div><div><b>${esc(t)}</b><span>${esc(sub)}</span></div></div>`
