@@ -2,7 +2,7 @@
 //   Entry        - Nitin / Mayuri tick each member's payment as the money reaches Ratnakar
 //   Paise Bharna - start-of-month sheet for the WhatsApp group (what each member has to pay)
 //   Statement    - month-end financial statement for the WhatsApp group
-// Both sheets can be copied or downloaded as an image (drawn on a canvas, no library).
+// Both sheets open as a picture first, then copy / download from there (drawn on a canvas, no library).
 
 const API = "nova_core.monthly";
 const MR_MONTHS = ["जानेवारी", "फेब्रुवारी", "मार्च", "एप्रिल", "मे", "जून", "जुलै", "ऑगस्ट", "सप्टेंबर", "ऑक्टोबर", "नोव्हेंबर", "डिसेंबर"];
@@ -222,9 +222,8 @@ class GatMonthly {
 		};
 		return `
 			<div class="gm-actions">
-				<button class="gm-btn" data-image="copy">📋 ${__("Copy image for WhatsApp")}</button>
-				<button class="gm-btn ghost" data-image="download">⬇ ${__("Download image")}</button>
-				<button class="gm-btn ghost" data-image="csv">📊 ${__("Download Excel")}</button>
+				<button class="gm-btn" data-image="one">👁 ${__("View sheet")}</button>
+				<button class="gm-btn ghost" data-image="month">📅 ${__("Whole month (both sheets)")}</button>
 			</div>
 			<div class="gm-card gm-sheet">
 				<div class="gm-sheet-title">${esc(spec.title)}</div>
@@ -342,32 +341,68 @@ class GatMonthly {
 		return cv;
 	}
 
-	image(how) {
-		const spec = this.tab === "statement" ? this.statement_spec() : this.demand_spec();
-		const name = `${this.tab === "statement" ? "statement" : "paise-bharna"}-${this.month.format("YYYY-MM")}`;
-		if (how === "csv") return this.download(this.csv(spec), `${name}.csv`);
-		const cv = this.canvas(spec);
-		const file = `${name}.png`;
+	// open the sheet as a picture first; copy / download only from there
+	//   one = the sheet on screen, month = Paise Bharna + Statement together
+	image(which) {
+		const specs = which === "month" ? [this.demand_spec(), this.statement_spec()]
+			: [this.tab === "statement" ? this.statement_spec() : this.demand_spec()];
+		const ym = this.month.format("YYYY-MM");
+		const name = which === "month" ? `gat-${ym}` : `${this.tab === "statement" ? "statement" : "paise-bharna"}-${ym}`;
+		const cv = this.stack(specs.map((sp) => this.canvas(sp)));
 		cv.toBlob((blob) => {
-			if (how === "copy" && navigator.clipboard && window.ClipboardItem) {
-				navigator.clipboard
-					.write([new ClipboardItem({ "image/png": blob })])
-					.then(() => frappe.show_alert({ message: __("Image copied. Paste it in the WhatsApp group."), indicator: "green" }))
-					.catch(() => this.download(blob, file));
-			} else {
-				this.download(blob, file);
-			}
+			const url = URL.createObjectURL(blob);
+			const d = new frappe.ui.Dialog({
+				title: which === "month" ? __("Whole month") + " · " + this.month.format("MMMM YYYY") : specs[0].title,
+				size: "extra-large",
+				fields: [{ fieldtype: "HTML", fieldname: "img" }],
+				primary_action_label: "⬇ " + __("Download image"),
+				primary_action: () => this.download(blob, `${name}.png`),
+				secondary_action_label: "📊 " + __("Download Excel"),
+				secondary_action: () => this.download(this.csv(specs), `${name}.csv`),
+			});
+			d.fields_dict.img.$wrapper.html(`<div style="max-height:65vh;overflow:auto;border:1px solid var(--border-color);border-radius:10px">
+				<img src="${url}" style="display:block;width:100%"></div>`);
+			if (navigator.clipboard && window.ClipboardItem)
+				d.add_custom_action("📋 " + __("Copy for WhatsApp"), () =>
+					navigator.clipboard
+						.write([new ClipboardItem({ "image/png": blob })])
+						.then(() => frappe.show_alert({ message: __("Image copied. Paste it in the WhatsApp group."), indicator: "green" }))
+				);
+			d.onhide = () => URL.revokeObjectURL(url);
+			d.show();
 		});
 	}
 
+	stack(cvs) {
+		if (cvs.length === 1) return cvs[0];
+		const gap = 80;
+		const out = document.createElement("canvas");
+		out.width = Math.max(...cvs.map((c) => c.width));
+		out.height = cvs.reduce((a, c) => a + c.height, 0) + gap * (cvs.length - 1);
+		const c = out.getContext("2d");
+		c.fillStyle = "#ffffff";
+		c.fillRect(0, 0, out.width, out.height);
+		let y = 0;
+		cvs.forEach((cv, i) => {
+			c.drawImage(cv, (out.width - cv.width) / 2, y);
+			y += cv.height;
+			if (i < cvs.length - 1) {
+				c.fillStyle = "#e2e8f0";
+				c.fillRect(0, y + gap / 2 - 2, out.width, 4);
+				y += gap;
+			}
+		});
+		return out;
+	}
+
 	// Excel opens CSV directly; the BOM makes it read the Marathi text as UTF-8
-	csv(spec) {
+	csv(specs) {
 		const cell = (v) => {
 			const s = String(v ?? "");
 			return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 		};
-		const lines = [[spec.title], spec.subtitle ? [spec.subtitle] : null, spec.meta ? [spec.meta.join(" | ")] : null, [],
-			spec.cols.map((c) => c[0]), ...spec.rows, spec.total, [], [spec.note]].filter(Boolean);
+		const lines = specs.flatMap((sp, i) => [i ? [] : null, i ? [] : null, [sp.title], sp.subtitle ? [sp.subtitle] : null,
+			sp.meta ? [sp.meta.join(" | ")] : null, [], sp.cols.map((c) => c[0]), ...sp.rows, sp.total, [], [sp.note]].filter(Boolean));
 		return new Blob(["\ufeff" + lines.map((l) => l.map(cell).join(",")).join("\r\n")], { type: "text/csv;charset=utf-8" });
 	}
 

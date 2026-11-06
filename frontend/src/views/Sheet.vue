@@ -54,16 +54,27 @@ const stTotals = computed(() => {
     balance: rows.value.reduce((a, r) => a + (paid(r) ? r.balance : r.loan), 0),
   };
 });
-// download / share the sheet that is on screen
+// open the sheet as a picture first; download / share only from there
+//   one  = the sheet on screen, month = Paise Bharna + Statement together
+const view = ref(null); // { specs, name, url }
+async function openView(which) {
+  const specs = which === 'month' ? [demandSpec(d.value), statementSpec(d.value)]
+    : [tab.value === 'statement' ? statementSpec(d.value) : demandSpec(d.value)];
+  const name = which === 'month' ? `gat-${d.value.month.slice(0, 7)}` : specs[0].file;
+  view.value = { specs, name, url: URL.createObjectURL(await imageBlob(specs)) };
+}
+function closeView() {
+  URL.revokeObjectURL(view.value.url);
+  view.value = null;
+}
 const busyExport = ref('');
-const spec = () => (tab.value === 'statement' ? statementSpec(d.value) : demandSpec(d.value));
 async function exportAs(kind) {
+  const { specs, name } = view.value;
   busyExport.value = kind;
   try {
-    const s = spec();
-    if (kind === 'share') await shareImage(s);
-    else if (kind === 'image') saveFile(await imageBlob(s), `${s.file}.png`);
-    else saveFile(csvBlob(s), `${s.file}.csv`);
+    if (kind === 'share') await shareImage(specs, name);
+    else if (kind === 'image') saveFile(await imageBlob(specs), `${name}.png`);
+    else saveFile(csvBlob(specs), `${name}.csv`);
   } finally { busyExport.value = ''; }
 }
 const canShare = typeof navigator !== 'undefined' && !!navigator.canShare;
@@ -86,9 +97,21 @@ const notPaid = computed(() => rows.value.filter((r) => !paid(r)).map((r) => r.m
     <div v-if="!d && !error" class="skeleton" />
 
     <div v-if="d" class="exports">
-      <button v-if="canShare" class="ex share" :disabled="!!busyExport" @click="exportAs('share')"><Icon name="share" :size="18" />{{ t('Share') }}</button>
-      <button class="ex" :disabled="!!busyExport" @click="exportAs('image')"><Icon name="image" :size="18" />{{ t('Image') }}</button>
-      <button class="ex" :disabled="!!busyExport" @click="exportAs('csv')"><Icon name="table" :size="18" />Excel</button>
+      <button class="ex" @click="openView('one')"><Icon name="image" :size="18" />{{ t('View sheet') }}</button>
+      <button class="ex month" @click="openView('month')"><Icon name="table" :size="18" />{{ t('Whole month') }}</button>
+    </div>
+
+    <div v-if="view" class="viewer" @click.self="closeView">
+      <div class="vbox">
+        <div class="vhead"><b>{{ view.specs.length > 1 ? t('Whole month') : view.specs[0].title }}</b>
+          <button class="icon-btn" @click="closeView">✕</button></div>
+        <div class="vimg"><img :src="view.url" alt=""></div>
+        <div class="exports">
+          <button v-if="canShare" class="ex share" :disabled="!!busyExport" @click="exportAs('share')"><Icon name="share" :size="18" />{{ t('Share') }}</button>
+          <button class="ex" :disabled="!!busyExport" @click="exportAs('image')"><Icon name="image" :size="18" />{{ t('Download image') }}</button>
+          <button class="ex" :disabled="!!busyExport" @click="exportAs('csv')"><Icon name="table" :size="18" />Excel</button>
+        </div>
+      </div>
     </div>
 
     <template v-if="d && tab === 'demand'">
@@ -147,6 +170,12 @@ const notPaid = computed(() => rows.value.filter((r) => !paid(r)).map((r) => r.m
   padding: 10px 6px; font-weight: 800; font-size: 13px; color: var(--ink); }
 .ex.share { background: #25d366; border-color: #25d366; color: #fff; }
 .ex:disabled { opacity: .5; }
+.ex.month { background: #14532d; border-color: #14532d; color: #fff; }
+.viewer { position: fixed; inset: 0; z-index: 50; background: rgba(15,23,42,.6); display: flex; align-items: center; justify-content: center; padding: 12px; }
+.vbox { background: #fff; border-radius: 18px; width: 100%; max-width: 760px; max-height: 100%; display: flex; flex-direction: column; gap: 10px; padding: 12px; }
+.vhead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.vimg { overflow: auto; border: 1px solid var(--line); border-radius: 12px; flex: 1; min-height: 0; }
+.vimg img { display: block; width: 100%; min-width: 560px; }
 .ok { color: var(--g2); font-weight: 700; }
 .tablewrap { padding: 0; overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; font-size: 12.5px; white-space: nowrap; }

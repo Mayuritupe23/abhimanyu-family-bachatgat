@@ -122,15 +122,36 @@ export function drawSheet(spec) {
   return cv;
 }
 
-export const imageBlob = (spec) => new Promise((resolve) => drawSheet(spec).toBlob(resolve, 'image/png'));
+// several sheets one under the other (the whole month = Paise Bharna + Statement)
+export function drawMany(specs) {
+  const cvs = specs.map(drawSheet);
+  if (cvs.length === 1) return cvs[0];
+  const gap = 40;
+  const out = document.createElement('canvas');
+  out.width = Math.max(...cvs.map((c) => c.width));
+  out.height = cvs.reduce((a, c) => a + c.height, 0) + gap * (cvs.length - 1);
+  const c = out.getContext('2d');
+  c.fillStyle = '#ffffff';
+  c.fillRect(0, 0, out.width, out.height);
+  let y = 0;
+  cvs.forEach((cv, i) => {
+    c.drawImage(cv, (out.width - cv.width) / 2, y);
+    y += cv.height;
+    if (i < cvs.length - 1) { c.fillStyle = '#e2e8f0'; c.fillRect(0, y + gap / 2 - 1, out.width, 2); y += gap; }
+  });
+  return out;
+}
+
+const list = (s) => (Array.isArray(s) ? s : [s]);
+export const imageBlob = (spec) => new Promise((resolve) => drawMany(list(spec)).toBlob(resolve, 'image/png'));
 
 export function csvBlob(spec) {
   const cell = (v) => {
     const s = String(v ?? '');
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
-  const lines = [[spec.title], spec.subtitle ? [spec.subtitle] : null, spec.meta ? [spec.meta.join(' | ')] : null, [],
-    spec.cols.map((c) => c[0]), ...spec.rows, spec.total, [], [spec.note]].filter(Boolean);
+  const lines = list(spec).flatMap((sp, i) => [i ? [] : null, i ? [] : null, [sp.title], sp.subtitle ? [sp.subtitle] : null,
+    sp.meta ? [sp.meta.join(' | ')] : null, [], sp.cols.map((c) => c[0]), ...sp.rows, sp.total, [], [sp.note]].filter(Boolean));
   // BOM so Excel opens the Marathi text as UTF-8
   return new Blob(['﻿' + lines.map((l) => l.map(cell).join(',')).join('\r\n')], { type: 'text/csv;charset=utf-8' });
 }
@@ -146,12 +167,12 @@ export function saveFile(blob, name) {
 }
 
 // phone share sheet (WhatsApp, Drive...) when the browser can share files, else a plain download
-export async function shareImage(spec) {
+export async function shareImage(spec, name) {
   const blob = await imageBlob(spec);
-  const file = new File([blob], `${spec.file}.png`, { type: 'image/png' });
+  const file = new File([blob], `${name}.png`, { type: 'image/png' });
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
-      await navigator.share({ files: [file], title: spec.title });
+      await navigator.share({ files: [file], title: name });
       return 'shared';
     } catch (e) {
       if (e.name === 'AbortError') return 'cancelled';
