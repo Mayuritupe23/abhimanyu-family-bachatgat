@@ -327,6 +327,14 @@ def disburse_loan(loan):
 
 
 @frappe.whitelist()
+def year_sheets(month=None):
+	"""Every month of the gat year, for the year statement download."""
+	from nova_core.monthly import get_year
+
+	return get_year(month)
+
+
+@frappe.whitelist()
 def sheet(month=None):
 	"""The month's sheet for everyone: what each member has to pay, and the month-end statement."""
 	from nova_core.monthly import get_sheet

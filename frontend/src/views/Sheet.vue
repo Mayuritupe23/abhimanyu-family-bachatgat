@@ -6,7 +6,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import Icon from '../components/Icon.vue';
 import { m } from '../api.js';
-import { demandSpec, imageBlob, saveFile, shareImage, statementSpec, xlsxBlob } from '../sheetExport.js';
+import { yearSpecs, demandSpec, imageBlob, saveFile, shareImage, statementSpec, xlsxBlob } from '../sheetExport.js';
 import { t } from '../i18n.js';
 import { monthName, rupee, todayISO } from '../util.js';
 
@@ -58,6 +58,15 @@ const stTotals = computed(() => {
 //   one  = the sheet on screen, month = Paise Bharna + Statement together
 const view = ref(null); // { specs, name, url }
 async function openView(which) {
+  if (which === 'year') {
+    busyYear.value = true;
+    try {
+      const specs = yearSpecs(await m('year_sheets', { month: month.value }));
+      // the picture is the year total; Excel carries every month too
+      view.value = { specs, name: specs[0].file, url: URL.createObjectURL(await imageBlob(specs[0])), year: true };
+    } catch (e) { error.value = e.message; } finally { busyYear.value = false; }
+    return;
+  }
   const specs = which === 'month' ? [demandSpec(d.value), statementSpec(d.value)]
     : [tab.value === 'statement' ? statementSpec(d.value) : demandSpec(d.value)];
   const name = which === 'month' ? `gat-${d.value.month.slice(0, 7)}` : specs[0].file;
@@ -68,12 +77,13 @@ function closeView() {
   view.value = null;
 }
 const busyExport = ref('');
+const busyYear = ref(false);
 async function exportAs(kind) {
   const { specs, name } = view.value;
   busyExport.value = kind;
   try {
-    if (kind === 'share') await shareImage(specs, name);
-    else if (kind === 'image') saveFile(await imageBlob(specs), `${name}.png`);
+    if (kind === 'share') await shareImage(view.value.year ? specs[0] : specs, name);
+    else if (kind === 'image') saveFile(await imageBlob(view.value.year ? specs[0] : specs), `${name}.png`);
     else saveFile(await xlsxBlob(specs), `${name}.xlsx`);
   } catch (e) {
     error.value = e.message;
@@ -101,13 +111,15 @@ const notPaid = computed(() => rows.value.filter((r) => !paid(r)).map((r) => r.m
     <div v-if="d" class="exports">
       <button class="ex" @click="openView('one')"><Icon name="image" :size="18" />{{ t('View sheet') }}</button>
       <button class="ex month" @click="openView('month')"><Icon name="table" :size="18" />{{ t('Whole month') }}</button>
+      <button class="ex year" :disabled="busyYear" @click="openView('year')"><Icon name="table" :size="18" />{{ busyYear ? '…' : t('Whole year') }}</button>
     </div>
 
     <div v-if="view" class="viewer" @click.self="closeView">
       <div class="vbox">
-        <div class="vhead"><b>{{ view.specs.length > 1 ? t('Whole month') : view.specs[0].title }}</b>
+        <div class="vhead"><b>{{ view.year ? t('Whole year') : view.specs.length > 1 ? t('Whole month') : view.specs[0].title }}</b>
           <button class="icon-btn" @click="closeView">✕</button></div>
         <div class="vimg"><img :src="view.url" alt=""></div>
+        <p v-if="view.year" class="muted small note">{{ t('Excel has the year total and every month on its own tab.') }}</p>
         <div class="exports">
           <button v-if="canShare" class="ex share" :disabled="!!busyExport" @click="exportAs('share')"><Icon name="share" :size="18" />{{ t('Share') }}</button>
           <button class="ex" :disabled="!!busyExport" @click="exportAs('image')"><Icon name="image" :size="18" />{{ t('Download image') }}</button>
@@ -172,6 +184,7 @@ const notPaid = computed(() => rows.value.filter((r) => !paid(r)).map((r) => r.m
   padding: 10px 6px; font-weight: 800; font-size: 13px; color: var(--ink); }
 .ex.share { background: #25d366; border-color: #25d366; color: #fff; }
 .ex:disabled { opacity: .5; }
+.ex.year { background: #b45309; border-color: #b45309; color: #fff; }
 .ex.month { background: #14532d; border-color: #14532d; color: #fff; }
 .viewer { position: fixed; inset: 0; z-index: 50; background: rgba(15,23,42,.6); display: flex; align-items: center; justify-content: center; padding: 12px; }
 .vbox { background: #fff; border-radius: 18px; width: 100%; max-width: 760px; max-height: 100%; display: flex; flex-direction: column; gap: 10px; padding: 12px; }

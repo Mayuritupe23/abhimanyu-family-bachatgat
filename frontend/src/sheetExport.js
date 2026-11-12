@@ -49,6 +49,35 @@ export function statementSpec(d) {
   };
 }
 
+// the whole gat year: a summary per member, then every month's statement on its own tab
+export function yearSpecs(y) {
+  const label = (d) => { const x = parse(d); const n = EN_MONTHS[x.getMonth()]; return `${n[0]}${n.slice(1, 3).toLowerCase()} ${x.getFullYear()}`; };
+  const months = y.sheets.map((d) => ({ ...statementSpec(d), sheet: label(d.month) }));
+  const byMember = new Map();
+  y.sheets.forEach((d) => d.rows.forEach((r) => {
+    const ok = r.state === 'paid';
+    const m = byMember.get(r.member) || { name: r.member_name, shares: 0, interest: 0, emi: 0, fine: 0, total: 0, months: 0, balance: 0 };
+    if (ok) { m.shares += r.saving; m.interest += r.interest; m.emi += r.emi; m.fine += r.fine; m.total += r.total; m.months += 1; }
+    m.balance = ok ? r.balance : r.loan; // loan left after the last month in the list
+    byMember.set(r.member, m);
+  }));
+  const rows = [...byMember.values()].map((m, i) => [i + 1, m.name, m.months, m.shares, m.interest, m.emi, m.fine, m.total, m.balance]);
+  const sum = (i) => rows.reduce((a, r) => a + (+r[i] || 0), 0);
+  const range = `${label(y.start)} – ${label(y.end)}`;
+  const summary = {
+    file: `gat-year-${String(y.start).slice(0, 7)}`,
+    sheet: 'Year Total',
+    title: 'YEARLY STATEMENT / TOTAL',
+    subtitle: `YEAR: ${range.toUpperCase()}`,
+    cols: [['NO', 'c', 50], ['NAME', 'l', 220], ['MONTHS PAID', 'r', 110], ['SHARES', 'r', 110], ['INTEREST', 'r', 110],
+      ['EMI', 'r', 100], ['PENALTY', 'r', 100], ['TOTAL PAID', 'r', 120], ['BALANCE LOAN', 'r', 130, '#2563eb']],
+    rows,
+    total: ['', 'TOTAL', '', sum(3), sum(4), sum(5), sum(6), sum(7), sum(8)],
+    note: `${y.sheets.length} महिने · ${range} · फक्त मंजूर झालेले पैसे`,
+  };
+  return [summary, ...months];
+}
+
 export function drawSheet(spec) {
   const S = 2; // sharp on phones
   const pad = 28, rowH = 34, headH = 40;

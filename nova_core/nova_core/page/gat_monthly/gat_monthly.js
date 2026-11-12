@@ -191,8 +191,7 @@ class GatMonthly {
 		};
 	}
 
-	statement_spec() {
-		const d = this.data;
+	statement_spec(d = this.data) {
 		// only approved payments count; a sent-but-not-approved one shows as not paid yet
 		const rows = d.rows.map((r) => {
 			const ok = r.state === "paid";
@@ -224,6 +223,7 @@ class GatMonthly {
 			<div class="gm-actions">
 				<button class="gm-btn" data-image="one">👁 ${__("View sheet")}</button>
 				<button class="gm-btn ghost" data-image="month">📅 ${__("Whole month (both sheets)")}</button>
+				<button class="gm-btn ghost" data-image="year">📆 ${__("Whole year (all statements)")}</button>
 			</div>
 			<div class="gm-card gm-sheet">
 				<div class="gm-sheet-title">${esc(spec.title)}</div>
@@ -343,16 +343,58 @@ class GatMonthly {
 
 	// open the sheet as a picture first; copy / download only from there
 	//   one = the sheet on screen, month = Paise Bharna + Statement together
+	//   year = the gat year's total + every month's statement (picture: the total; Excel: all tabs)
 	image(which) {
+		if (which === "year") {
+			return frappe.xcall(`${API}.get_year`, { month: this.month.format("YYYY-MM-DD") }).then((y) => {
+				const specs = this.year_specs(y);
+				this.show(specs, [specs[0]], specs[0].file, __("Whole year") + " · " + specs[0].subtitle.replace("YEAR: ", ""));
+			});
+		}
 		const specs = which === "month" ? [this.demand_spec(), this.statement_spec()]
 			: [this.tab === "statement" ? this.statement_spec() : this.demand_spec()];
 		const ym = this.month.format("YYYY-MM");
 		const name = which === "month" ? `gat-${ym}` : `${this.tab === "statement" ? "statement" : "paise-bharna"}-${ym}`;
-		const cv = this.stack(specs.map((sp) => this.canvas(sp)));
+		this.show(specs, specs, name, which === "month" ? __("Whole month") + " · " + this.month.format("MMMM YYYY") : specs[0].title);
+	}
+
+	year_specs(y) {
+		const label = (d) => moment(d).format("MMM YYYY");
+		const months = y.sheets.map((d) => Object.assign(this.statement_spec(d), { sheet: label(d.month) }));
+		const by = new Map();
+		y.sheets.forEach((d) =>
+			d.rows.forEach((r) => {
+				const ok = r.state === "paid";
+				const m = by.get(r.member) || { name: r.member_name, shares: 0, interest: 0, emi: 0, fine: 0, total: 0, months: 0, balance: 0 };
+				if (ok) Object.assign(m, { shares: m.shares + r.saving, interest: m.interest + r.interest, emi: m.emi + r.emi,
+					fine: m.fine + r.fine, total: m.total + r.total, months: m.months + 1 });
+				m.balance = ok ? r.balance : r.loan; // loan left after the last month in the list
+				by.set(r.member, m);
+			})
+		);
+		const rows = [...by.values()].map((m, i) => [i + 1, m.name, m.months, m.shares, m.interest, m.emi, m.fine, m.total, m.balance]);
+		const sum = (i) => rows.reduce((a, r) => a + (+r[i] || 0), 0);
+		const range = `${label(y.start)} – ${label(y.end)}`;
+		return [{
+			file: `gat-year-${moment(y.start).format("YYYY-MM")}`,
+			sheet: "Year Total",
+			title: "YEARLY STATEMENT / TOTAL",
+			subtitle: `YEAR: ${range.toUpperCase()}`,
+			cols: [["NO", "c", 50], ["NAME", "l", 220], ["MONTHS PAID", "r", 110], ["SHARES", "r", 110], ["INTEREST", "r", 110],
+				["EMI", "r", 100], ["PENALTY", "r", 100], ["TOTAL PAID", "r", 120], ["BALANCE LOAN", "r", 130, "#2563eb"]],
+			rows,
+			total: ["", "TOTAL", "", sum(3), sum(4), sum(5), sum(6), sum(7), sum(8)],
+			note: `${y.sheets.length} महिने · ${range} · फक्त मंजूर झालेले पैसे`,
+		}, ...months];
+	}
+
+	// picture of `pics`, Excel of `specs`
+	show(specs, pics, name, title) {
+		const cv = this.stack(pics.map((sp) => this.canvas(sp)));
 		cv.toBlob((blob) => {
 			const url = URL.createObjectURL(blob);
 			const d = new frappe.ui.Dialog({
-				title: which === "month" ? __("Whole month") + " · " + this.month.format("MMMM YYYY") : specs[0].title,
+				title,
 				size: "extra-large",
 				fields: [{ fieldtype: "HTML", fieldname: "img" }],
 				primary_action_label: "⬇ " + __("Download image"),

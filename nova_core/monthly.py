@@ -6,7 +6,7 @@ statement that are shared on the WhatsApp group.
 
 import frappe
 from frappe import _
-from frappe.utils import add_months, flt, get_first_day, today
+from frappe.utils import add_months, flt, get_first_day, getdate, today
 
 from nova_core.gat import due_date, get_settings, sees_all
 
@@ -87,6 +87,27 @@ def get_sheet(month=None):
 		"can_enter": bool({"Khajinadar", "System Manager"} & set(frappe.get_roles())),
 		"sees_all": sees_all(),
 	}
+
+
+@frappe.whitelist()
+def get_year(month=None):
+	"""Every month's sheet of the gat year that holds `month` (the year starts in the month the
+	group started, e.g. Sept to Aug), up to this month. Payment screenshots are left out."""
+	month = getdate(get_first_day(month or today()))
+	first = getdate(get_settings().group_start_date).month
+	start = month.replace(month=first) if month.month >= first else month.replace(year=month.year - 1, month=first)
+	this_month = getdate(get_first_day(today()))
+	sheets = []
+	for i in range(12):
+		m = getdate(add_months(start, i))
+		if m > this_month:
+			break
+		sheet = get_sheet(m)
+		for r in sheet["rows"]:
+			r.pop("screenshot", None)
+			r.pop("extra_waiting", None)
+		sheets.append(sheet)
+	return {"start": start, "end": add_months(start, 11), "sheets": sheets}
 
 
 def _opening_balance(member, month):

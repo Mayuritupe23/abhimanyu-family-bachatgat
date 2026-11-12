@@ -36,7 +36,7 @@ def put(ws, row, col, value, **style):
 def add_sheet(wb, spec):
 	cols, rows = spec["cols"], spec["rows"]
 	n = len(cols)
-	title = TAB.get(spec["title"].split(" ")[0], "Paise Bharna")
+	title = (spec.get("sheet") or TAB.get(spec["title"].split(" ")[0], "Paise Bharna"))[:31]
 	ws = wb.create_sheet(title if title not in wb.sheetnames else f"{title} 2")
 	side = Side(style="thin", color=LINE)
 	box = Border(left=side, right=side, top=side, bottom=side)
@@ -98,7 +98,7 @@ def add_sheet(wb, spec):
 @frappe.whitelist()
 def sheet_xlsx(specs):
 	specs = json.loads(specs) if isinstance(specs, str) else specs
-	if not isinstance(specs, list) or not 0 < len(specs) <= 4 or any(len(s.get("rows", [])) > 500 for s in specs):
+	if not isinstance(specs, list) or not 0 < len(specs) <= 14 or any(len(s.get("rows", [])) > 500 for s in specs):
 		frappe.throw("Invalid sheet")
 	wb = Workbook()
 	wb.remove(wb.active)
