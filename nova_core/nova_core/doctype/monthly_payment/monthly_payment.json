@@ -78,6 +78,7 @@
    "label": "Screenshot"
   },
   {
+   "depends_on": "eval:(doc.loans || []).length",
    "fieldname": "sb_loans",
    "fieldtype": "Section Break",
    "label": "Loan Repayment"
@@ -100,12 +101,14 @@
    "read_only": 1
   },
   {
+   "depends_on": "eval:(doc.loans || []).length",
    "fieldname": "interest",
    "fieldtype": "Currency",
    "label": "Interest",
    "read_only": 1
   },
   {
+   "depends_on": "eval:(doc.loans || []).length",
    "fieldname": "principal",
    "fieldtype": "Currency",
    "label": "EMI",
@@ -159,6 +162,7 @@
   },
   {
    "default": "0",
+   "depends_on": "eval:doc.is_extra",
    "description": "Extra loan repayment in the same month, sent after the month's hapta (allowed till the due date)",
    "fieldname": "is_extra",
    "fieldtype": "Check",
@@ -171,7 +175,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-11-04 12:32:22.070080",
+ "modified": "2026-11-12 14:38:24.442273",
  "modified_by": "Administrator",
  "module": "Nova Core",
  "name": "Monthly Payment",

@@ -64,7 +64,9 @@ function show_intro(frm) {
 		`<b>${__("Pay this month")}: ${format_currency(d.total)}</b> = ${parts.join(" + ")}<br>` +
 			(approver
 				? __("Check the screenshot and the money, then press Submit to approve.")
-				: __("Want to return more of your loan? Type it in EMI. Pay it all to close the loan.")),
+				: (d.loans || []).length
+				? __("Want to return more of your loan? Type it in EMI. Pay it all to close the loan.")
+				: __("Pay this amount with the scanner below, then attach the screenshot.")),
 		d.fine ? "orange" : "green"
 	);
 }
