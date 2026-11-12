@@ -71,13 +71,13 @@ function whatsapp(r) {
   const due = day(d.value.due_date);
   const link = `${location.origin}/afbg/pay`;
   const text = lang.value === 'mr'
-    ? [`नमस्कार ${first} जी 🙏`, `*अभिमन्यू फॅमिली बचत गट* कडून एक छोटीशी आठवण 😊`, '',
+    ? [`नमस्कार ${first} 🙏`, `*अभिमन्यू फॅमिली बचत गट* कडून एक छोटीशी आठवण 😊`, '',
         `${monthName(month.value)} महिन्याचा हप्ता *${amount}* अजून जमा झालेला दिसत नाही.`,
         fine
           ? `शेवटची तारीख ${due} होऊन गेल्यामुळे आतापर्यंत ${rupee(fine)} दंड लागला आहे. कृपया जमेल तितक्या लवकर भरावा.`
           : `कृपया ${due} पर्यंत भरावा, म्हणजे दंड लागणार नाही.`,
         '', `भरण्यासाठी: ${link}`, '', 'आधीच भरले असल्यास कृपया या संदेशाकडे दुर्लक्ष करावे.', 'धन्यवाद 🙏'].join('\n')
-    : [`Namaskar ${first} ji 🙏`, `A gentle reminder from *Abhimanyu Family Bachat Gat* 😊`, '',
+    : [`Namaskar ${first} 🙏`, `A gentle reminder from *Abhimanyu Family Bachat Gat* 😊`, '',
         `Your ${monthName(month.value)} hapta of *${amount}* has not reached us yet.`,
         fine
           ? `The last date (${due}) has passed, so a fine of ${rupee(fine)} has been added. Please pay as soon as you can.`
