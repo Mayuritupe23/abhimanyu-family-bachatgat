@@ -1,7 +1,7 @@
 <script setup>
 // Every rupee the group spent, for everyone to see. Approvers can add one.
 import { onMounted, ref } from 'vue';
-import { m } from '../api.js';
+import { m, shrink, upload } from '../api.js';
 import { t } from '../i18n.js';
 import { day, rupee, todayISO } from '../util.js';
 
@@ -10,15 +10,24 @@ const error = ref('');
 const adding = ref(false);
 const form = ref({ date: todayISO(), amount: null, description: '' });
 const busy = ref(false);
+const bill = ref(null); // photo of the bill / payment screenshot, optional
+const billUrl = ref('');
+function pickBill(e) {
+  bill.value = e.target.files[0] || null;
+  if (billUrl.value) URL.revokeObjectURL(billUrl.value);
+  billUrl.value = bill.value ? URL.createObjectURL(bill.value) : '';
+}
 onMounted(async () => { try { d.value = await m('expenses'); } catch (e) { error.value = e.message; } });
 
 async function save() {
   busy.value = true;
   error.value = '';
   try {
-    d.value = await m('add_expense', form.value);
+    const receipt = bill.value ? await upload(await shrink(bill.value)) : undefined;
+    d.value = await m('add_expense', { ...form.value, receipt });
     adding.value = false;
     form.value = { date: todayISO(), amount: null, description: '' };
+    pickBill({ target: { files: [] } });
   } catch (e) { error.value = e.message; } finally { busy.value = false; }
 }
 </script>
@@ -39,6 +48,11 @@ async function save() {
         <label class="field">{{ t('What was it for?') }}<input v-model="form.description" class="input" :placeholder="t('e.g. meeting tea, bank charges')" /></label>
         <label class="field">{{ t('Amount') }}<input v-model.number="form.amount" class="input" type="number" inputmode="numeric" min="1" /></label>
         <label class="field">{{ t('Date') }}<input v-model="form.date" class="input" type="date" :max="todayISO()" /></label>
+        <label class="shot">
+          <input type="file" accept="image/*" hidden @change="pickBill" />
+          <img v-if="billUrl" :src="billUrl" alt="" />
+          <span v-else>📷 {{ t('Add bill photo / screenshot (optional)') }}</span>
+        </label>
         <div class="two"><button class="btn ghost" @click="adding = false">{{ t('Cancel') }}</button>
           <button class="btn" :disabled="busy || !form.amount || !form.description" @click="save">{{ t('Save') }}</button></div>
       </section>
@@ -47,6 +61,7 @@ async function save() {
       <article v-for="e in d.rows" :key="e.name" class="card row item">
         <div class="ic">🧾</div>
         <div class="grow"><b>{{ e.description }}</b><div class="muted small">{{ day(e.date) }}</div></div>
+        <a v-if="e.receipt" class="billbtn" :href="e.receipt" target="_blank" rel="noopener">📎 {{ t('Bill') }}</a>
         <b class="amt">{{ rupee(e.amount) }}</b>
       </article>
     </template>
@@ -59,5 +74,8 @@ async function save() {
 .item { padding: 12px 14px; }
 .ic { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--soft); font-size: 18px; flex: none; }
 .amt { font-size: 16px; }
+.shot { display: grid; place-items: center; min-height: 90px; border: 2px dashed var(--line); border-radius: 14px; color: var(--muted); font-weight: 700; cursor: pointer; overflow: hidden; }
+.shot img { width: 100%; max-height: 220px; object-fit: contain; }
+.billbtn { flex: none; font-size: 12px; font-weight: 800; padding: 6px 10px; border-radius: 99px; background: #dcfce7; color: #166534; text-decoration: none; }
 .two { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; }
 </style>

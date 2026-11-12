@@ -10,7 +10,8 @@
  "field_order": [
   "date",
   "amount",
-  "description"
+  "description",
+  "receipt"
  ],
  "fields": [
   {
@@ -34,12 +35,18 @@
    "in_list_view": 1,
    "label": "Description",
    "reqd": 1
+  },
+  {
+   "description": "Photo of the bill or the payment screenshot",
+   "fieldname": "receipt",
+   "fieldtype": "Attach Image",
+   "label": "Bill / Screenshot"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-11-03 12:26:51.532054",
+ "modified": "2026-11-12 09:53:59.513366",
  "modified_by": "Administrator",
  "module": "Nova Core",
  "name": "Group Expense",

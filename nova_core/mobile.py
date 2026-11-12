@@ -341,14 +341,22 @@ def sheet(month=None):
 
 @frappe.whitelist()
 def expenses():
-	rows = frappe.get_all("Group Expense", fields=["name", "date", "amount", "description"], order_by="date desc")
+	rows = frappe.get_all("Group Expense", fields=["name", "date", "amount", "description", "receipt"], order_by="date desc")
 	return {"rows": rows, "total": sum(flt(r.amount) for r in rows), "can_add": _is_approver()}
 
 
 @frappe.whitelist()
-def add_expense(date, amount, description):
+def add_expense(date, amount, description, receipt=None):
 	frappe.only_for(APPROVER_ROLES)
-	frappe.get_doc({"doctype": "Group Expense", "date": date, "amount": flt(amount), "description": description}).insert()
+	file = receipt and frappe.db.get_value("File", {"file_url": receipt, "owner": frappe.session.user}, "name")
+	if receipt and not file:
+		frappe.throw(_("Please add the bill photo again"))
+	doc = frappe.get_doc(
+		{"doctype": "Group Expense", "date": date, "amount": flt(amount), "description": description, "receipt": receipt}
+	).insert()
+	if file:
+		# a private file opens for whoever can read the expense it is attached to
+		frappe.db.set_value("File", file, {"attached_to_doctype": doc.doctype, "attached_to_name": doc.name, "attached_to_field": "receipt"})
 	return expenses()
 
 
