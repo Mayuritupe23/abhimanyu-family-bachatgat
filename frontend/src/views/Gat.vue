@@ -64,7 +64,7 @@ function fineToday() {
 const owes = (r) => r.due + fineToday();
 
 function whatsapp(r) {
-  const first = r.member_name.split(' ')[0];
+  const first = r.member_name; // full name: first + last
   const fine = fineToday();
   // Marathi when the approver uses the app in Marathi, otherwise English; the group's full name, never the short app name
   const amount = rupee(owes(r));

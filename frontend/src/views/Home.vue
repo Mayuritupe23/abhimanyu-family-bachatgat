@@ -18,7 +18,8 @@ const greeting = computed(() => {
   const h = new Date().getHours();
   return t(h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening');
 });
-const firstName = computed(() => (d.value?.me?.member_name || store.boot?.full_name || '').split(' ')[0]);
+// greeting uses the full name (first + last), e.g. Namaskar, Ratnakar Tupe
+const firstName = computed(() => d.value?.me?.member_name || store.boot?.full_name || '');
 const tm = computed(() => d.value?.me?.this_month);
 const late = computed(() => d.value && d.value.days_to_due < 0);
 const stamp = computed(() => (tm.value?.status === 'Pending' ? (late.value ? 'Late' : 'Due') : tm.value?.status === 'Paid' ? 'Paid' : 'Sent'));

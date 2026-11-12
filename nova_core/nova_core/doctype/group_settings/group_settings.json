@@ -135,7 +135,7 @@
    "fieldtype": "Column Break"
   },
   {
-   "default": "Ratnkar Tupe",
+   "default": "Ratnakar Tupe",
    "fieldname": "payee_name",
    "fieldtype": "Data",
    "label": "Pay To (name)"
