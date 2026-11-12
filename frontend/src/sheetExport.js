@@ -174,6 +174,40 @@ export function drawMany(specs) {
 }
 
 const list = (s) => (Array.isArray(s) ? s : [s]);
+// PDF with one sheet per page (A4 landscape), drawn from the same pictures; no library:
+// each page is a JPEG placed on the page, the file is written by hand.
+export async function pdfBlob(specs) {
+  const cvs = list(specs).map(drawSheet);
+  const jpgs = await Promise.all(cvs.map((c) => new Promise((ok) => c.toBlob((b) => b.arrayBuffer().then((a) => ok(new Uint8Array(a))), 'image/jpeg', 0.9))));
+  const enc = new TextEncoder();
+  const parts = [];
+  const offsets = [];
+  let len = 0;
+  const push = (x) => { const b = typeof x === 'string' ? enc.encode(x) : x; parts.push(b); len += b.length; };
+  const obj = (n, ...body) => { offsets[n] = len; push(`${n} 0 obj\n`); body.forEach(push); push('\nendobj\n'); };
+  const W = 842, H = 595;
+  push('%PDF-1.4\n');
+  const kids = [];
+  cvs.forEach((c, i) => {
+    const page = 3 + i * 3, content = page + 1, img = page + 2;
+    kids.push(`${page} 0 R`);
+    const k = Math.min((W - 40) / c.width, (H - 40) / c.height);
+    const w = c.width * k, h = c.height * k;
+    const draw = `q ${w.toFixed(2)} 0 0 ${h.toFixed(2)} ${((W - w) / 2).toFixed(2)} ${(H - 20 - h).toFixed(2)} cm /I Do Q`;
+    obj(page, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /XObject << /I ${img} 0 R >> >> /Contents ${content} 0 R >>`);
+    obj(content, `<< /Length ${draw.length} >>\nstream\n${draw}\nendstream`);
+    obj(img, `<< /Type /XObject /Subtype /Image /Width ${c.width} /Height ${c.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpgs[i].length} >>\nstream\n`, jpgs[i], '\nendstream');
+  });
+  obj(1, '<< /Type /Catalog /Pages 2 0 R >>');
+  obj(2, `<< /Type /Pages /Kids [${kids.join(' ')}] /Count ${kids.length} >>`);
+  const size = 3 + cvs.length * 3;
+  const xref = len;
+  push(`xref\n0 ${size}\n0000000000 65535 f \n`);
+  for (let n = 1; n < size; n++) push(`${String(offsets[n]).padStart(10, '0')} 00000 n \n`);
+  push(`trailer\n<< /Size ${size} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`);
+  return new Blob(parts, { type: 'application/pdf' });
+}
+
 export const imageBlob = (spec) => new Promise((resolve) => drawMany(list(spec)).toBlob(resolve, 'image/png'));
 
 // designed Excel (.xlsx) made on the server from the same specs, one tab per sheet

@@ -107,7 +107,11 @@ def get_year(month=None):
 			r.pop("screenshot", None)
 			r.pop("extra_waiting", None)
 		sheets.append(sheet)
-	return {"start": start, "end": add_months(start, 11), "sheets": sheets}
+	years, y = [], getdate(get_settings().group_start_date).replace(day=1)
+	while y <= this_month:
+		years.append(y)
+		y = getdate(add_months(y, 12))
+	return {"start": start, "end": add_months(start, 11), "sheets": sheets, "years": years}
 
 
 def _opening_balance(member, month):

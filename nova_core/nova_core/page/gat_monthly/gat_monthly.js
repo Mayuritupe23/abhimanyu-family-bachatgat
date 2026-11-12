@@ -346,16 +346,24 @@ class GatMonthly {
 	//   year = the gat year's total + every month's statement (picture: the total; Excel: all tabs)
 	image(which) {
 		if (which === "year") {
-			return frappe.xcall(`${API}.get_year`, { month: this.month.format("YYYY-MM-DD") }).then((y) => {
-				const specs = this.year_specs(y);
-				this.show(specs, [specs[0]], specs[0].file, __("Whole year") + " · " + specs[0].subtitle.replace("YEAR: ", ""));
-			});
+			const label = (d) => `${moment(d).format("MMM YYYY")} – ${moment(d).add(11, "months").format("MMM YYYY")}`;
+			const load = (at) =>
+				frappe.xcall(`${API}.get_year`, { month: at }).then((y) => {
+					const specs = this.year_specs(y);
+					return { specs, pics: [specs[0]], name: specs[0].file, title: __("Whole year") + " · " + label(y.start), years: y.years, start: y.start };
+				});
+			return load(this.month.format("YYYY-MM-DD")).then((v) =>
+				this.show(v, { options: v.years.map((d) => ({ value: d, label: label(d), on: d === v.start })), load })
+			);
 		}
 		const specs = which === "month" ? [this.demand_spec(), this.statement_spec()]
 			: [this.tab === "statement" ? this.statement_spec() : this.demand_spec()];
 		const ym = this.month.format("YYYY-MM");
-		const name = which === "month" ? `gat-${ym}` : `${this.tab === "statement" ? "statement" : "paise-bharna"}-${ym}`;
-		this.show(specs, specs, name, which === "month" ? __("Whole month") + " · " + this.month.format("MMMM YYYY") : specs[0].title);
+		this.show({
+			specs, pics: specs,
+			name: which === "month" ? `gat-${ym}` : `${this.tab === "statement" ? "statement" : "paise-bharna"}-${ym}`,
+			title: which === "month" ? __("Whole month") + " · " + this.month.format("MMMM YYYY") : specs[0].title,
+		});
 	}
 
 	year_specs(y) {
@@ -388,35 +396,94 @@ class GatMonthly {
 		}, ...months];
 	}
 
-	// picture of `pics`, Excel of `specs`
-	show(specs, pics, name, title) {
-		const cv = this.stack(pics.map((sp) => this.canvas(sp)));
-		cv.toBlob((blob) => {
-			const url = URL.createObjectURL(blob);
-			const d = new frappe.ui.Dialog({
-				title,
-				size: "extra-large",
-				fields: [{ fieldtype: "HTML", fieldname: "img" }],
-				primary_action_label: "⬇ " + __("Download image"),
-				primary_action: () => this.download(blob, `${name}.png`),
-				secondary_action_label: "📊 " + __("Download Excel"),
-				secondary_action: () =>
-					frappe.xcall("nova_core.excel.sheet_xlsx", { specs }).then((b64) => {
-						const bytes = Uint8Array.from(atob(b64), (ch) => ch.charCodeAt(0));
-						this.download(new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }), `${name}.xlsx`);
-					}),
+	// one dialog: picture of view.pics; image / Excel / PDF / copy of the view on screen.
+	// Picking another year loads it into the same dialog.
+	paint(view) {
+		return new Promise((ok) =>
+			this.stack(view.pics.map((sp) => this.canvas(sp))).toBlob((blob) => {
+				view.blob = blob;
+				view.url = URL.createObjectURL(blob);
+				ok(view);
+			})
+		);
+	}
+
+	show(view, years) {
+		let v = view;
+		const d = new frappe.ui.Dialog({
+			title: v.title,
+			size: "extra-large",
+			fields: [{ fieldtype: "HTML", fieldname: "img" }],
+			primary_action_label: "⬇ " + __("Download image"),
+			primary_action: () => this.download(v.blob, `${v.name}.png`),
+			secondary_action_label: "📊 " + __("Download Excel"),
+			secondary_action: () =>
+				frappe.xcall("nova_core.excel.sheet_xlsx", { specs: v.specs }).then((b64) => {
+					const bytes = Uint8Array.from(atob(b64), (ch) => ch.charCodeAt(0));
+					this.download(new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }), `${v.name}.xlsx`);
+				}),
+		});
+		const $w = d.fields_dict.img.$wrapper;
+		$w.html(`${years ? `<select class="form-control gm-year" style="max-width:260px;margin-bottom:10px">${years.options
+			.map((o) => `<option value="${o.value}" ${o.on ? "selected" : ""}>${esc(o.label)}</option>`).join("")}</select>
+			<div class="text-muted small" style="margin-bottom:8px">${__("PDF and Excel have the year total and every month.")}</div>` : ""}
+			<div style="max-height:60vh;overflow:auto;border:1px solid var(--border-color);border-radius:10px">
+			<img class="gm-pic" style="display:block;width:100%"></div>`);
+		const put = (next) => {
+			if (v.url) URL.revokeObjectURL(v.url);
+			v = next;
+			d.set_title(v.title);
+			$w.find(".gm-pic").attr("src", v.url);
+		};
+		if (years)
+			$w.find(".gm-year").on("change", (e) => {
+				e.target.disabled = true;
+				years.load(e.target.value).then((n) => this.paint(n)).then(put).finally(() => (e.target.disabled = false));
 			});
-			d.fields_dict.img.$wrapper.html(`<div style="max-height:65vh;overflow:auto;border:1px solid var(--border-color);border-radius:10px">
-				<img src="${url}" style="display:block;width:100%"></div>`);
-			if (navigator.clipboard && window.ClipboardItem)
-				d.add_custom_action("📋 " + __("Copy for WhatsApp"), () =>
-					navigator.clipboard
-						.write([new ClipboardItem({ "image/png": blob })])
-						.then(() => frappe.show_alert({ message: __("Image copied. Paste it in the WhatsApp group."), indicator: "green" }))
-				);
-			d.onhide = () => URL.revokeObjectURL(url);
+		d.add_custom_action("📄 " + __("Download PDF"), () => this.pdf(v.specs).then((b) => this.download(b, `${v.name}.pdf`)));
+		if (navigator.clipboard && window.ClipboardItem)
+			d.add_custom_action("📋 " + __("Copy for WhatsApp"), () =>
+				navigator.clipboard
+					.write([new ClipboardItem({ "image/png": v.blob })])
+					.then(() => frappe.show_alert({ message: __("Image copied. Paste it in the WhatsApp group."), indicator: "green" }))
+			);
+		d.onhide = () => v.url && URL.revokeObjectURL(v.url);
+		this.paint(v).then((n) => {
+			put(n);
 			d.show();
 		});
+	}
+
+	// PDF, one sheet per A4 landscape page, from the same pictures (each page is a JPEG; no library)
+	async pdf(specs) {
+		const cvs = specs.map((sp) => this.canvas(sp));
+		const jpgs = await Promise.all(cvs.map((c) => new Promise((ok) => c.toBlob((b) => b.arrayBuffer().then((a) => ok(new Uint8Array(a))), "image/jpeg", 0.9))));
+		const enc = new TextEncoder();
+		const parts = [], offsets = [];
+		let len = 0;
+		const push = (x) => { const b = typeof x === "string" ? enc.encode(x) : x; parts.push(b); len += b.length; };
+		const obj = (n, ...body) => { offsets[n] = len; push(`${n} 0 obj\n`); body.forEach(push); push("\nendobj\n"); };
+		const W = 842, H = 595;
+		push("%PDF-1.4\n");
+		const kids = [];
+		cvs.forEach((c, i) => {
+			const page = 3 + i * 3, content = page + 1, img = page + 2;
+			kids.push(`${page} 0 R`);
+			const k = Math.min((W - 40) / c.width, (H - 40) / c.height);
+			const w = c.width * k, h = c.height * k;
+			const draw = `q ${w.toFixed(2)} 0 0 ${h.toFixed(2)} ${((W - w) / 2).toFixed(2)} ${(H - 20 - h).toFixed(2)} cm /I Do Q`;
+			obj(page, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /XObject << /I ${img} 0 R >> >> /Contents ${content} 0 R >>`);
+			obj(content, `<< /Length ${draw.length} >>\nstream\n${draw}\nendstream`);
+			obj(img, `<< /Type /XObject /Subtype /Image /Width ${c.width} /Height ${c.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpgs[i].length} >>\nstream\n`, jpgs[i], "\nendstream");
+		});
+		obj(1, "<< /Type /Catalog /Pages 2 0 R >>");
+		obj(2, `<< /Type /Pages /Kids [${kids.join(" ")}] /Count ${kids.length} >>`);
+		const size = 3 + cvs.length * 3;
+		const xref = len;
+		push(`xref\n0 ${size}\n0000000000 65535 f \n`);
+		for (let n = 1; n < size; n++) push(`${String(offsets[n]).padStart(10, "0")} 00000 n \n`);
+		push(`trailer\n<< /Size ${size} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`);
+		return new Blob(parts, { type: "application/pdf" });
 	}
 
 	stack(cvs) {

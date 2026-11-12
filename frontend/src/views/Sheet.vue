@@ -6,7 +6,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import Icon from '../components/Icon.vue';
 import { m } from '../api.js';
-import { yearSpecs, demandSpec, imageBlob, saveFile, shareImage, statementSpec, xlsxBlob } from '../sheetExport.js';
+import { pdfBlob, yearSpecs, demandSpec, imageBlob, saveFile, shareImage, statementSpec, xlsxBlob } from '../sheetExport.js';
 import { t } from '../i18n.js';
 import { monthName, rupee, todayISO } from '../util.js';
 
@@ -57,13 +57,16 @@ const stTotals = computed(() => {
 // open the sheet as a picture first; download / share only from there
 //   one  = the sheet on screen, month = Paise Bharna + Statement together
 const view = ref(null); // { specs, name, url }
-async function openView(which) {
+async function openView(which, at = month.value) {
   if (which === 'year') {
     busyYear.value = true;
     try {
-      const specs = yearSpecs(await m('year_sheets', { month: month.value }));
-      // the picture is the year total; Excel carries every month too
-      view.value = { specs, name: specs[0].file, url: URL.createObjectURL(await imageBlob(specs[0])), year: true };
+      const y = await m('year_sheets', { month: at });
+      const specs = yearSpecs(y);
+      if (view.value) closeView();
+      // the picture is the year total; Excel and PDF carry every month too
+      view.value = { specs, name: specs[0].file, url: URL.createObjectURL(await imageBlob(specs[0])), year: true,
+        years: y.years, picked: String(y.start).slice(0, 10) };
     } catch (e) { error.value = e.message; } finally { busyYear.value = false; }
     return;
   }
@@ -78,11 +81,14 @@ function closeView() {
 }
 const busyExport = ref('');
 const busyYear = ref(false);
+const yearLabel = (y) => { const a = new Date(String(y).slice(0, 10) + 'T00:00:00'); const b = new Date(a); b.setMonth(b.getMonth() + 11);
+  const f = (d) => d.toLocaleString('en-IN', { month: 'short', year: 'numeric' }); return `${f(a)} – ${f(b)}`; };
 async function exportAs(kind) {
   const { specs, name } = view.value;
   busyExport.value = kind;
   try {
     if (kind === 'share') await shareImage(view.value.year ? specs[0] : specs, name);
+    else if (kind === 'pdf') saveFile(await pdfBlob(specs), `${name}.pdf`);
     else if (kind === 'image') saveFile(await imageBlob(view.value.year ? specs[0] : specs), `${name}.png`);
     else saveFile(await xlsxBlob(specs), `${name}.xlsx`);
   } catch (e) {
@@ -118,12 +124,16 @@ const notPaid = computed(() => rows.value.filter((r) => !paid(r)).map((r) => r.m
       <div class="vbox">
         <div class="vhead"><b>{{ view.year ? t('Whole year') : view.specs.length > 1 ? t('Whole month') : view.specs[0].title }}</b>
           <button class="icon-btn" @click="closeView">✕</button></div>
+        <select v-if="view.year" class="input" :value="view.picked" :disabled="busyYear" @change="openView('year', $event.target.value)">
+          <option v-for="y in view.years" :key="y" :value="String(y).slice(0, 10)">{{ yearLabel(y) }}</option>
+        </select>
         <div class="vimg"><img :src="view.url" alt=""></div>
-        <p v-if="view.year" class="muted small note">{{ t('Excel has the year total and every month on its own tab.') }}</p>
+        <p v-if="view.year" class="muted small note">{{ t('PDF and Excel have the year total and every month.') }}</p>
         <div class="exports">
           <button v-if="canShare" class="ex share" :disabled="!!busyExport" @click="exportAs('share')"><Icon name="share" :size="18" />{{ t('Share') }}</button>
           <button class="ex" :disabled="!!busyExport" @click="exportAs('image')"><Icon name="image" :size="18" />{{ t('Download image') }}</button>
           <button class="ex" :disabled="!!busyExport" @click="exportAs('csv')"><Icon name="table" :size="18" />Excel</button>
+          <button class="ex pdf" :disabled="!!busyExport" @click="exportAs('pdf')"><Icon name="image" :size="18" />PDF</button>
         </div>
       </div>
     </div>
@@ -184,6 +194,7 @@ const notPaid = computed(() => rows.value.filter((r) => !paid(r)).map((r) => r.m
   padding: 10px 6px; font-weight: 800; font-size: 13px; color: var(--ink); }
 .ex.share { background: #25d366; border-color: #25d366; color: #fff; }
 .ex:disabled { opacity: .5; }
+.ex.pdf { background: #b91c1c; border-color: #b91c1c; color: #fff; }
 .ex.year { background: #b45309; border-color: #b45309; color: #fff; }
 .ex.month { background: #14532d; border-color: #14532d; color: #fff; }
 .viewer { position: fixed; inset: 0; z-index: 50; background: rgba(15,23,42,.6); display: flex; align-items: center; justify-content: center; padding: 12px; }
