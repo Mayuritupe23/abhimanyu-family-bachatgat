@@ -49,12 +49,12 @@ def export(folder):
 
 	loans = frappe.get_all(
 		"Loan", filters={"docstatus": 1},
-		fields=["name", "member", "member_name", "amount", "disbursed_on", "is_opening", "outstanding", "status", "purpose"],
+		fields=["name", "member", "member_name", "amount", "disbursed_on", "is_opening", "outstanding", "status", "purpose", "due_date"],
 		order_by="disbursed_on, name",
 	)
 	_write(folder / "loans.csv",
-		["Loan ID", "Member ID", "Member Name", "Amount", "Given On", "Not From Group Cash", "Balance Now", "Status", "Note"],
-		[[l.name, l.member, l.member_name, flt(l.amount), l.disbursed_on, l.is_opening, flt(l.outstanding), l.status, l.purpose] for l in loans])
+		["Loan ID", "Member ID", "Member Name", "Amount", "Given On", "Not From Group Cash", "Balance Now", "Status", "Note", "Close By"],
+		[[l.name, l.member, l.member_name, flt(l.amount), l.disbursed_on, l.is_opening, flt(l.outstanding), l.status, l.purpose, l.due_date or ""] for l in loans])
 
 	pays = frappe.get_all(
 		"Monthly Payment", filters={"docstatus": 1},
@@ -109,7 +109,8 @@ def run(folder):
 			doctype="Loan", member=member[r["Member ID"]], member_name=r["Member Name"], amount=flt(r["Amount"]),
 			purpose=r["Note"], is_opening=int(r["Not From Group Cash"] or 0),
 			opening_date=r["Given On"] if int(r["Not From Group Cash"] or 0) else None,
-			status="Active", application_date=r["Given On"], disbursed_on=r["Given On"], due_date=None,
+			# loans from before the app have no close date; ones from Nov 2026 on follow the 10-month rule
+			status="Active", application_date=r["Given On"], disbursed_on=r["Given On"], due_date=r.get("Close By") or None,
 			outstanding=flt(r["Amount"]), docstatus=1,
 		))
 		doc.set_new_name()
