@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import AskDialog from './components/AskDialog.vue';
 import Avatar from './components/Avatar.vue';
 import Icon from './components/Icon.vue';
 import { store } from './store.js';
@@ -49,6 +50,7 @@ function later() {
       <router-link to="/me" class="avatar-link"><Avatar :name="store.boot?.member?.member_name || store.boot?.full_name" :photo="store.boot?.photo" :size="36" /></router-link>
     </header>
 
+    <AskDialog />
     <main :class="{ padded: showChrome }">
       <router-view v-slot="{ Component }">
         <transition name="fade" mode="out-in"><component :is="Component" /></transition>

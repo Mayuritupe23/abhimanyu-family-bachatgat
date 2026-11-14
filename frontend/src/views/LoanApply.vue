@@ -3,6 +3,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { m } from '../api.js';
+import { ask } from '../ask.js';
 import { t } from '../i18n.js';
 import { rupee } from '../util.js';
 
@@ -22,6 +23,13 @@ const perMonth = computed(() => Math.ceil(amt.value / (info.value?.tenure || 10)
 const quick = computed(() => [5000, 10000, 20000].filter((a) => a < max.value).concat(max.value ? [max.value] : []));
 
 async function apply() {
+  const ok = await ask({
+    title: t('Apply for this loan?'),
+    lines: [[t('Loan amount'), rupee(amt.value)], [t('Interest per month'), rupee(interest.value)], ...(purpose.value ? [[t('For'), purpose.value]] : [])],
+    note: t('All members will vote on your request. The treasurer decides after the voting. You can withdraw it until then.'),
+    ok: t('Yes, apply'),
+  });
+  if (!ok) return;
   busy.value = true;
   error.value = '';
   try {

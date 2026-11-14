@@ -2,7 +2,52 @@
 // For license information, please see license.txt
 
 // Live totals while the member fills the form: saving + interest + optional extra EMI + fine.
+// the payment in plain lines for the confirm boxes
+function pay_lines(frm) {
+	const d = frm.doc;
+	const rs = (v) => format_currency(v, "INR", 0);
+	return [
+		[__("Member"), d.member_name],
+		[__("Month"), moment(d.month).format("MMMM YYYY") + (d.is_extra ? " · " + __("Extra EMI") : "")],
+		...[["Saving", d.saving], ["Loan interest", d.interest], ["EMI", d.principal], ["Late fine", d.fine]].filter(([, v]) => v).map(([k, v]) => [__(k), rs(v)]),
+		[__("Total"), rs(d.total)],
+		[__("Paid On"), frappe.datetime.str_to_user(d.payment_date)],
+	];
+}
+
 frappe.ui.form.on("Monthly Payment", {
+	setup(frm) {
+		// Submit here is the approval: ask with the payment details instead of Frappe's generic
+		// "Permanently Submit?" box, then submit without asking twice
+		const submit = frm.savesubmit.bind(frm);
+		frm.savesubmit = (btn, callback, on_error) =>
+			gat.confirm({
+				title: __("Has this money reached the account?"),
+				lines: pay_lines(frm),
+				note: __("Check the screenshot and the bank / UPI app first. Approve only if the full amount has arrived. After approval it goes into the member's khata and the group account."),
+				ok: __("Yes, money received – Approve"),
+			}).then((ok) => {
+				if (!ok) return frm.handle_save_fail(btn, on_error);
+				const ask = frappe.confirm;
+				frappe.confirm = (msg, yes) => {
+					frappe.confirm = ask;
+					yes();
+				};
+				return submit(btn, callback, on_error);
+			});
+	},
+	validate(frm) {
+		// a member sending a new payment: make sure they have paid first
+		if (!frm.is_new() || frappe.user.has_role(["Khajinadar", "System Manager"])) return;
+		return gat.confirm({
+			title: __("Send this payment for approval?"),
+			lines: pay_lines(frm),
+			note: __("Send only after you have paid this exact amount. The approver will check the money and the screenshot, then approve it."),
+			ok: __("Yes, I have paid – Send"),
+		}).then((ok) => {
+			if (!ok) frappe.validated = false;
+		});
+	},
 	onload(frm) {
 		if (!frm.is_new()) return;
 		if (!frm.doc.month) frm.set_value("month", frappe.datetime.get_today());

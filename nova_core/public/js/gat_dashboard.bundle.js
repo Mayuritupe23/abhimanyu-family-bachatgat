@@ -672,14 +672,25 @@ function render(root) {
 		if (e.target.closest("[data-refresh]")) return load();
 		const vote = e.target.closest("[data-vote]");
 		if (vote) {
-			vote.parentElement.querySelectorAll("button").forEach((b) => (b.disabled = true));
-			frappe
-				.xcall(VOTE, { loan: vote.dataset.loan, vote: vote.dataset.vote })
-				.then(() => {
-					frappe.show_alert({ message: __("Vote saved"), indicator: "green" });
-					load();
-				})
-				.catch(load);
+			const l = state.data.me.to_vote.find((x) => x.name === vote.dataset.loan);
+			const yes = vote.dataset.vote === "Yes";
+			gat.confirm({
+				title: yes ? __("Vote YES for this loan?") : __("Vote NO for this loan?"),
+				lines: [[__("Member"), l.member_name], [__("Loan amount"), money(l.amount)]],
+				note: __("You can change your vote until the treasurer decides."),
+				ok: yes ? __("Yes, vote YES") : __("Yes, vote NO"),
+				danger: !yes,
+			}).then((ok) => {
+				if (!ok) return;
+				vote.parentElement.querySelectorAll("button").forEach((b) => (b.disabled = true));
+				frappe
+					.xcall(VOTE, { loan: vote.dataset.loan, vote: vote.dataset.vote })
+					.then(() => {
+						frappe.show_alert({ message: __("Vote saved"), indicator: "green" });
+						load();
+					})
+					.catch(load);
+			});
 			return;
 		}
 		const action = e.target.closest("[data-action]");

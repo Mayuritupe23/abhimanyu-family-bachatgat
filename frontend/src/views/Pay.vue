@@ -4,6 +4,7 @@ import { computed, onMounted, reactive, ref, watch } from 'vue';
 import Icon from '../components/Icon.vue';
 import { m, shrink, upload } from '../api.js';
 import { store } from '../store.js';
+import { ask } from '../ask.js';
 import { t } from '../i18n.js';
 import { day, monthName, rupee, todayISO } from '../util.js';
 
@@ -70,6 +71,13 @@ function pick(e) {
 }
 
 async function submit() {
+  const ok = await ask({
+    title: t('Send this payment for approval?'),
+    lines: [[t('Month'), `${monthName(monthDate.value)}${mode.value === 'extra' ? ' · ' + t('Extra EMI') : ''}`], [t('Amount'), rupee(p.value.total)], [t('Paid to'), pay.payee || '—']],
+    note: t('Send only after you have paid this exact amount. The approver will check the money and the screenshot, then approve it.'),
+    ok: t('Yes, I have paid – Send'),
+  });
+  if (!ok) return;
   busy.value = true;
   error.value = '';
   try {

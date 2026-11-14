@@ -41,7 +41,7 @@ Application Date,अर्ज दिनांक
 Disbursed On,वाटप दिनांक
 Close By,परतफेड शेवटची तारीख
 Outstanding Principal,बाकी मुद्दल
-Votes,मतदान
+Votes,मते
 Vote,मत
 Vote {0},मत {0}
 Yes,होय
@@ -82,11 +82,10 @@ A disbursed loan cannot be cancelled,वाटप झालेले कर्�
 Draft,मसुदा
 Scan and pay to,स्कॅन करून पैसे पाठवा
 Pay in UPI app,UPI ॲपमध्ये पैसे भरा
-"After paying, attach the screenshot below and Save.","पैसे भरल्यानंतर खाली स्क्रीनशॉट जोडा आणि Save करा."
+"After paying, attach the screenshot below and Save.",पैसे भरल्यानंतर खाली स्क्रीनशॉट जोडा आणि Save करा.
 Payment scanner not set yet (Group Settings).,पेमेंट स्कॅनर अजून सेट केलेला नाही (Group Settings).
-Amount,रक्कम
 Install AFBG app,AFBG ॲप इंस्टॉल करा
-"Opens in one tap from your home screen, like any other app.","इतर ॲपसारखे होम स्क्रीनवरून एका टॅपमध्ये उघडेल."
+"Opens in one tap from your home screen, like any other app.",इतर ॲपसारखे होम स्क्रीनवरून एका टॅपमध्ये उघडेल.
 Install,इंस्टॉल करा
 Later,नंतर
 Tap Share ⬆️ then 'Add to Home Screen'.,Share ⬆️ दाबा आणि 'Add to Home Screen' निवडा.
@@ -130,8 +129,36 @@ Cash & bank,रोख व बँक
 All members,सर्व सभासद
 Bill / Screenshot,बिल / स्क्रीनशॉट
 Photo of the bill or the payment screenshot,बिलाचा फोटो किंवा पेमेंटचा स्क्रीनशॉट
-Pay this amount with the scanner below, then attach the screenshot.,खालील स्कॅनरने ही रक्कम भरा, मग स्क्रीनशॉट जोडा.
+"Pay this amount with the scanner below, then attach the screenshot.","खालील स्कॅनरने ही रक्कम भरा, मग स्क्रीनशॉट जोडा."
 Whole year,पूर्ण वर्ष
 Whole year (all statements),पूर्ण वर्ष (सर्व स्टेटमेंट)
 Download PDF,PDF डाउनलोड करा
 PDF and Excel have the year total and every month.,PDF आणि एक्सेलमध्ये वर्षाचा एकूण हिशोब आणि प्रत्येक महिना आहे.
+Has this money reached the account?,हे पैसे खात्यात जमा झाले का?
+Check the screenshot and the bank / UPI app first. Approve only if the full amount has arrived. After approval it goes into the member's khata and the group account.,आधी स्क्रीनशॉट आणि बँक / UPI ॲप तपासा. पूर्ण रक्कम आली असेल तरच मंजूर करा. मंजुरीनंतर ही रक्कम सभासदाच्या खात्यात आणि गटाच्या हिशोबात जाईल.
+"Yes, money received – Approve","होय, पैसे मिळाले – मंजूर करा"
+Record this UPI payment?,हे UPI पेमेंट नोंदवायचे?
+Total received,एकूण मिळालेले
+Save only after checking that this amount has reached the bank / UPI account. It is entered as paid and approved.,ही रक्कम बँक / UPI खात्यात आल्याचे तपासूनच सेव्ह करा. ही नोंद भरलेली व मंजूर म्हणून होईल.
+"Yes, money received – Save","होय, पैसे मिळाले – सेव्ह करा"
+Cancel this payment?,हे पेमेंट रद्द करायचे?
+The payment is cancelled and taken out of the member's khata and the group account. The row opens again for entry.,पेमेंट रद्द होईल आणि सभासदाच्या खात्यातून व गटाच्या हिशोबातून काढले जाईल. ओळ पुन्हा नोंदीसाठी उघडेल.
+"Yes, cancel payment","होय, पेमेंट रद्द करा"
+Vote YES for this loan?,या कर्जाला 'होय' मत द्यायचे?
+Vote NO for this loan?,या कर्जाला 'नाही' मत द्यायचे?
+Loan amount,कर्जाची रक्कम
+You can change your vote until the treasurer decides.,खजिनदार निर्णय घेईपर्यंत तुम्ही मत बदलू शकता.
+"Yes, vote YES","होय, 'होय' मत द्या"
+"Yes, vote NO","होय, 'नाही' मत द्या"
+Approve this loan?,हे कर्ज मंजूर करायचे?
+Reject this loan request?,ही कर्ज मागणी नामंजूर करायची?
+"The member will see the loan as approved. Give the money next, then press Money given.",सभासदाला कर्ज मंजूर झाल्याचे दिसेल. नंतर पैसे द्या आणि 'पैसे दिले' दाबा.
+The member will see the request as rejected. This cannot be undone; they can apply again later.,सभासदाला मागणी नामंजूर झाल्याचे दिसेल. हे परत बदलता येणार नाही; ते नंतर पुन्हा अर्ज करू शकतात.
+"Yes, approve loan","होय, कर्ज मंजूर करा"
+"Yes, reject request","होय, नामंजूर करा"
+Has the loan money been given?,कर्जाचे पैसे दिले का?
+Press this only after the full amount has reached the member. Interest starts from next month and the loan must be closed within 10 months.,पूर्ण रक्कम सभासदाला मिळाल्यावरच हे दाबा. व्याज पुढील महिन्यापासून सुरू होईल आणि कर्ज १० महिन्यांत फेडावे लागेल.
+"Yes, money given","होय, पैसे दिले"
+Send this payment for approval?,हे पेमेंट मंजुरीसाठी पाठवायचे?
+"Send only after you have paid this exact amount. The approver will check the money and the screenshot, then approve it.",हीच रक्कम भरल्यानंतरच पाठवा. मंजूर करणारे पैसे आणि स्क्रीनशॉट तपासून मंजूर करतील.
+"Yes, I have paid – Send","होय, मी भरले – पाठवा"

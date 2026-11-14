@@ -4,6 +4,7 @@ import { computed, onMounted, ref } from 'vue';
 import Avatar from '../components/Avatar.vue';
 import Icon from '../components/Icon.vue';
 import { m } from '../api.js';
+import { ask } from '../ask.js';
 import { lang, t } from '../i18n.js';
 import { day, monthName, rupee, todayISO } from '../util.js';
 
@@ -51,8 +52,27 @@ async function loanAct(fn, l, extra = {}) {
   error.value = '';
   try { lg.value = await m(fn, { loan: l.name, ...extra }); } catch (e) { error.value = e.message; } finally { busy.value = ''; }
 }
-const decide = (l, status) => confirm(`${l.member_name} ${rupee(l.amount)}: ${t(status === 'Approved' ? 'Approve' : 'Reject')}?`) && loanAct('decide_loan', l, { status });
-const giveMoney = (l) => confirm(`${t('Mark as given to')} ${l.member_name}: ${rupee(l.amount)}?`) && loanAct('disburse_loan', l);
+async function decide(l, status) {
+  const yes = status === 'Approved';
+  const ok = await ask({
+    title: t(yes ? 'Approve this loan?' : 'Reject this loan request?'),
+    lines: [[t('Member'), l.member_name], [t('Loan amount'), rupee(l.amount)], [t('Votes'), `👍 ${l.yes} · 👎 ${l.no}`]],
+    note: t(yes ? 'The member will see the loan as approved. Give the money next, then press Money given.'
+      : 'The member will see the request as rejected. This cannot be undone; they can apply again later.'),
+    ok: t(yes ? 'Yes, approve loan' : 'Yes, reject request'),
+    tone: yes ? 'green' : 'red',
+  });
+  if (ok) loanAct('decide_loan', l, { status });
+}
+async function giveMoney(l) {
+  const ok = await ask({
+    title: t('Has the loan money been given?'),
+    lines: [[t('Member'), l.member_name], [t('Loan amount'), rupee(l.amount)], [t('Date'), day(todayISO())]],
+    note: t('Press this only after the full amount has reached the member. Interest starts from next month and the loan must be closed within 10 months.'),
+    ok: t('Yes, money given'),
+  });
+  if (ok) loanAct('disburse_loan', l);
+}
 const collected = computed(() => paid.value.reduce((a, r) => a + r.total, 0));
 const shown = computed(() => ({ sent: sent.value, pending: pending.value, paid: paid.value }[filter.value] || []));
 
@@ -100,14 +120,56 @@ async function act(fn, args, key) {
     if (res && res.rows) d.value = res; else await load();
   } catch (e) { error.value = e.message; } finally { busy.value = ''; }
 }
-const approve = (r) => act('approve', { payment: r.payment }, r.key);
-const sendBack = (r) => confirm(`${r.member_name}: ${t('Send back')}?`) && act('reject', { payment: r.payment }, r.key);
+// what the member paid, line by line, for the confirm box
+const payLines = (r) => [
+  [t('Member'), r.member_name],
+  [t('Month'), `${monthName(month.value)}${r.extra ? ' · ' + t('Extra EMI') : ''}`],
+  ...(r.saving ? [[t('Saving'), rupee(r.saving)]] : []),
+  ...(r.interest ? [[t('Loan interest'), rupee(r.interest)]] : []),
+  ...(r.emi ? [[t('EMI'), rupee(r.emi)]] : []),
+  ...(r.fine ? [[t('Late fine'), rupee(r.fine)]] : []),
+  [t('Total'), rupee(r.total)],
+  ...(r.payment_date ? [[t('Paid on'), day(r.payment_date)]] : []),
+];
+async function approve(r) {
+  const ok = await ask({
+    title: t('Has this money reached the account?'),
+    lines: payLines(r),
+    note: t('Check the screenshot and the bank / UPI app first. Approve only if the full amount has arrived. After approval it goes into the member\'s khata and the group account.'),
+    ok: t('Yes, money received – Approve'),
+  });
+  if (ok) act('approve', { payment: r.payment }, r.key);
+}
+async function sendBack(r) {
+  const ok = await ask({
+    title: t('Send this payment back?'),
+    lines: payLines(r),
+    note: t('Use this if the money has not arrived or the screenshot is wrong. The member will have to send the payment again.'),
+    ok: t('Yes, send back'),
+    tone: 'red',
+  });
+  if (ok) act('reject', { payment: r.payment }, r.key);
+}
 // member paid on UPI but did not send it in the app: the approver enters it after checking the bank
-function markPaid(r) {
-  const emi = r.loan ? prompt(`${r.member_name} · ${t('EMI')} (${t('Left')} ${rupee(r.loan)})`, '0') : '0';
-  if (emi === null) return;
-  if (!confirm(`${r.member_name}: ${t('Paid on UPI')} ${rupee(owes(r) + (+emi || 0))}? ${t('Check it reached the bank first.')}`)) return;
-  act('record_payment', { member: r.member, month: month.value, emi: +emi || 0 }, r.member);
+async function markPaid(r) {
+  const base = [[t('Member'), r.member_name], [t('Month'), monthName(month.value)], [t('Hapta (with interest and fine)'), rupee(owes(r))]];
+  let emi = 0;
+  if (r.loan) {
+    emi = await ask({
+      title: t('Did the member also repay some loan?'),
+      lines: [...base, [t('Loan left'), rupee(r.loan)]],
+      input: { label: t('EMI paid (₹) – leave 0 if none'), value: 0, max: r.loan },
+      ok: t('Next'),
+    });
+    if (emi === null) return;
+  }
+  const ok = await ask({
+    title: t('Record this UPI payment?'),
+    lines: [...base, ...(emi ? [[t('EMI'), rupee(emi)]] : []), [t('Total received'), rupee(owes(r) + emi)]],
+    note: t('Save only after checking that this amount has reached the bank / UPI account. It is entered as paid and approved.'),
+    ok: t('Yes, money received – Save'),
+  });
+  if (ok) act('record_payment', { member: r.member, month: month.value, emi }, r.member);
 }
 </script>
 

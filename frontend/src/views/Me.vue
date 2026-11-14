@@ -4,6 +4,7 @@ import Icon from '../components/Icon.vue';
 import { logout, m, squarePhoto, upload } from '../api.js';
 import Avatar from '../components/Avatar.vue';
 import { store } from '../store.js';
+import { ask } from '../ask.js';
 import { lang, setLang, t } from '../i18n.js';
 import { rupee } from '../util.js';
 
@@ -30,7 +31,7 @@ async function pickPhoto(e) {
   } catch (err) { photoError.value = err.message; } finally { photoBusy.value = false; }
 }
 async function removePhoto() {
-  if (!confirm(t('Remove profile photo?'))) return;
+  if (!(await ask({ title: t('Remove profile photo?'), note: t('Your initials will show instead.'), ok: t('Yes, remove'), tone: 'red' }))) return;
   await m('set_photo', {});
   store.boot.photo = null;
 }

@@ -2,6 +2,7 @@
 // Every rupee the group spent, for everyone to see. Approvers can add one.
 import { onMounted, ref } from 'vue';
 import { m, shrink, upload } from '../api.js';
+import { ask } from '../ask.js';
 import { t } from '../i18n.js';
 import { day, rupee, todayISO } from '../util.js';
 
@@ -20,6 +21,13 @@ function pickBill(e) {
 onMounted(async () => { try { d.value = await m('expenses'); } catch (e) { error.value = e.message; } });
 
 async function save() {
+  const ok = await ask({
+    title: t('Add this group expense?'),
+    lines: [[t('For'), form.value.description], [t('Amount'), rupee(form.value.amount)], [t('Date'), day(form.value.date)], [t('Bill photo'), bill.value ? t('Attached') : t('Not attached')]],
+    note: t('This amount is taken out of the group\'s earnings and every member can see it.'),
+    ok: t('Yes, add expense'),
+  });
+  if (!ok) return;
   busy.value = true;
   error.value = '';
   try {

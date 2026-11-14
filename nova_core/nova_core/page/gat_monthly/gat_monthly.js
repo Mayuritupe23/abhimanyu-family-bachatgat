@@ -33,14 +33,32 @@ class GatMonthly {
 		this.$body.on("click", "[data-save]", (e) => this.save(e.currentTarget.closest("tr")));
 		this.$body.on("click", "[data-undo]", (e) => this.undo(e.currentTarget.dataset.undo));
 		this.$body.on("click", "[data-approve]", (e) => {
-			e.currentTarget.disabled = true;
-			frappe
-				.xcall(`${API}.approve_row`, { payment: e.currentTarget.dataset.approve })
-				.then(() => {
-					frappe.show_alert({ message: __("Approved"), indicator: "green" });
-					this.load();
-				})
-				.catch(() => (e.currentTarget.disabled = false));
+			const btn = e.currentTarget;
+			const payment = btn.dataset.approve;
+			const r = this.data.rows.find((x) => x.payment === payment);
+			const x = r ? null : this.data.rows.flatMap((y) => (y.extra_waiting || []).map((w) => ({ ...w, member_name: y.member_name }))).find((w) => w.name === payment);
+			const lines = r
+				? [[__("Member"), r.member_name], [__("Month"), this.month.format("MMMM YYYY")],
+					...[["Saving", r.saving], ["Loan interest", r.interest], ["EMI", r.emi], ["Late fine", r.fine]].filter(([, v]) => v).map(([k, v]) => [__(k), `₹${num(v)}`]),
+					[__("Total"), `₹${num(r.total)}`], [__("Paid On"), frappe.datetime.str_to_user(r.payment_date)]]
+				: [[__("Member"), x ? x.member_name : ""], [__("Month"), this.month.format("MMMM YYYY") + " · " + __("Extra EMI")],
+					[__("EMI"), `₹${num(x ? x.principal : 0)}`], [__("Paid On"), x ? frappe.datetime.str_to_user(x.payment_date) : ""]];
+			gat.confirm({
+				title: __("Has this money reached the account?"),
+				lines,
+				note: __("Check the screenshot and the bank / UPI app first. Approve only if the full amount has arrived. After approval it goes into the member's khata and the group account."),
+				ok: __("Yes, money received – Approve"),
+			}).then((yes) => {
+				if (!yes) return;
+				btn.disabled = true;
+				frappe
+					.xcall(`${API}.approve_row`, { payment })
+					.then(() => {
+						frappe.show_alert({ message: __("Approved"), indicator: "green" });
+						this.load();
+					})
+					.catch(() => (btn.disabled = false));
+			});
 		});
 		this.$body.on("click", "[data-open]", (e) => frappe.set_route("Form", "Monthly Payment", e.currentTarget.dataset.open));
 		this.$body.on("input change", ".gm-entry input, .gm-entry select", (e) => this.preview(e.target.closest("tr")));
@@ -147,8 +165,21 @@ class GatMonthly {
 		$tr.find(".total b").text(num(total));
 	}
 
-	save(tr) {
+	async save(tr) {
 		const $tr = $(tr);
+		const r = this.data.rows.find((x) => x.member === $tr.data("member"));
+		const emi = +$tr.find(".emi").val() || 0;
+		const yes = await gat.confirm({
+			title: __("Record this UPI payment?"),
+			lines: [[__("Member"), r.member_name], [__("Month"), this.month.format("MMMM YYYY")],
+				[__("Paid On"), frappe.datetime.str_to_user($tr.find(".date").val())],
+				[__("Saving"), `₹${num(r.saving)}`], ...(r.interest ? [[__("Loan interest"), `₹${num(r.interest)}`]] : []),
+				...(emi ? [[__("EMI"), `₹${num(emi)}`]] : []), ...(+$tr.find(".fine").text().replace(/,/g, "") ? [[__("Late fine"), `₹${$tr.find(".fine").text()}`]] : []),
+				[__("Total received"), `₹${$tr.find(".total b").text()}`]],
+			note: __("Save only after checking that this amount has reached the bank / UPI account. It is entered as paid and approved."),
+			ok: __("Yes, money received – Save"),
+		});
+		if (!yes) return;
 		const $btn = $tr.find("[data-save]").prop("disabled", true);
 		frappe
 			.xcall(`${API}.save_row`, {
@@ -166,9 +197,14 @@ class GatMonthly {
 	}
 
 	undo(payment) {
-		frappe.confirm(__("Cancel this payment? The row will open again for entry."), () =>
-			frappe.xcall(`${API}.undo_row`, { payment }).then(() => this.load())
-		);
+		const r = this.data.rows.find((x) => x.payment === payment) || {};
+		gat.confirm({
+			title: __("Cancel this payment?"),
+			lines: [[__("Member"), r.member_name], [__("Month"), this.month.format("MMMM YYYY")], [__("Total"), `₹${num(r.total)}`]],
+			note: __("The payment is cancelled and taken out of the member's khata and the group account. The row opens again for entry."),
+			ok: __("Yes, cancel payment"),
+			danger: true,
+		}).then((yes) => yes && frappe.xcall(`${API}.undo_row`, { payment }).then(() => this.load()));
 	}
 
 	// ------------------------------------------------------------ shared sheets

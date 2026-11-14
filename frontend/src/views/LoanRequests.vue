@@ -4,6 +4,7 @@ import { computed, onMounted, ref } from 'vue';
 import Avatar from '../components/Avatar.vue';
 import Icon from '../components/Icon.vue';
 import { m } from '../api.js';
+import { ask } from '../ask.js';
 import { t } from '../i18n.js';
 import { day, rupee } from '../util.js';
 
@@ -13,6 +14,15 @@ const busy = ref('');
 onMounted(async () => { try { d.value = await m('loans'); } catch (e) { error.value = e.message; } });
 
 async function vote(loan, v) {
+  const r = d.value.requests.find((x) => x.name === loan);
+  const ok = await ask({
+    title: t(v === 'Yes' ? 'Vote YES for this loan?' : 'Vote NO for this loan?'),
+    lines: [[t('Member'), r.member_name], [t('Loan amount'), rupee(r.amount)]],
+    note: t('You can change your vote until the treasurer decides.'),
+    ok: t(v === 'Yes' ? 'Yes, vote YES' : 'Yes, vote NO'),
+    tone: v === 'Yes' ? 'green' : 'red',
+  });
+  if (!ok) return;
   busy.value = loan;
   error.value = '';
   try { d.value = await m('vote', { loan, vote: v }); } catch (e) { error.value = e.message; } finally { busy.value = ''; }

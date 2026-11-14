@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { m } from '../api.js';
+import { ask } from '../ask.js';
 import { t } from '../i18n.js';
 import { day, rupee } from '../util.js';
 
@@ -18,7 +19,16 @@ async function run(fn, args, key) {
   try { d.value = await m(fn, args); } catch (e) { error.value = e.message; } finally { busy.value = ''; }
 }
 const waiting = computed(() => (d.value?.requests || []).filter((r) => !r.my_vote).length);
-const withdraw = (l) => confirm(`${t('Withdraw request')} ${rupee(l.amount)}?`) && run('withdraw_loan', { loan: l.name }, l.name);
+async function withdraw(l) {
+  const ok = await ask({
+    title: t('Withdraw your loan request?'),
+    lines: [[t('Loan amount'), rupee(l.amount)]],
+    note: t('Voting on it stops. You can apply again later.'),
+    ok: t('Yes, withdraw'),
+    tone: 'red',
+  });
+  if (ok) run('withdraw_loan', { loan: l.name }, l.name);
+}
 
 // where an application stands: asked -> voting -> approved -> money given
 const stage = (l) => ({ Applied: 1, Approved: 2, Active: 3, Closed: 3 }[l.status] || 0);
