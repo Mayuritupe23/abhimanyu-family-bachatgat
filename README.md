@@ -30,25 +30,6 @@ A *bachat gat* is a savings group: every member saves a fixed amount each month,
 - **Phone app at `/afbg`.** A separate mobile app (installable, "AFBG" on the home screen) for members: this month's hapta with the UPI QR and screenshot upload, khata, loans with voting, and an Approve tab for approvers. English and मराठी. The full desk stays at `/desk/gat`.
 - **Reports.** Member Passbook, Pending Dues and Group Balance (where every rupee is: cash, loans, expenses).
 
-## Screenshots
-
-<p align="center"><img src="docs/screenshots/dashboard.png" alt="Dashboard" width="900"></p>
-<p align="center"><em>Home dashboard: my dues, my khata, group totals, action center and this month's board</em></p>
-
-| Pay now (QR + amount) | On the phone |
-|---|---|
-| <img src="docs/screenshots/pay-now.png" alt="Pay now" width="520"> | <img src="docs/screenshots/mobile.png" alt="Mobile" width="240"> |
-
-| Monthly Sheet: entry and approval | Paise Bharna (for WhatsApp) |
-|---|---|
-| <img src="docs/screenshots/monthly-entry.png" alt="Monthly entry"> | <img src="docs/screenshots/paise-bharna.png" alt="Paise Bharna"> |
-
-| Month-end statement | Login |
-|---|---|
-| <img src="docs/screenshots/statement.png" alt="Statement"> | <img src="docs/screenshots/login.png" alt="Login"> |
-
-<sub>Member names, phone numbers and the payment QR are blurred.</sub>
-
 ## Who does what
 
 | Role | Can |
