@@ -151,8 +151,8 @@ def _my_panel(s, month, days_late):
 		l.days = date_diff(l.due_date, today()) if l.due_date else None
 	this_month = frappe.db.get_value(
 		"Monthly Payment",
-		{"member": member.name, "month": month, "docstatus": ["<", 2]},
-		["name", "docstatus", "total"],
+		{"member": member.name, "month": month, "docstatus": ["<", 2], "is_extra": 0},
+		["name", "docstatus", "total", "saving", "interest", "principal", "fine", "payment_date"],
 		as_dict=True,
 	)
 	voted = set(frappe.get_all("Loan Vote", {"member": member.name}, pluck="parent"))
@@ -179,13 +179,16 @@ def _my_panel(s, month, days_late):
 		+ _sum("Monthly Payment", "saving", {"member": member.name, "docstatus": 1}),
 		"loans": loans,
 		"loan_total": sum(flt(l.outstanding) for l in loans),
+		# once paid or sent, the card shows that payment's own lines; before that, what is due
 		"this_month": {
 			"status": "Paid" if this_month and this_month.docstatus == 1 else "Submitted" if this_month else "Pending",
 			"payment": this_month.name if this_month else None,
+			"payment_date": this_month.payment_date if this_month else None,
 			"amount": flt(this_month.total) if this_month else flt(s.monthly_saving) + interest + fine,
-			"saving": s.monthly_saving,
-			"interest": interest,
-			"fine": fine,
+			"saving": flt(this_month.saving) if this_month else s.monthly_saving,
+			"interest": flt(this_month.interest) if this_month else interest,
+			"emi": flt(this_month.principal) if this_month else 0,
+			"fine": flt(this_month.fine) if this_month else fine,
 		},
 		"to_vote": to_vote,
 	}

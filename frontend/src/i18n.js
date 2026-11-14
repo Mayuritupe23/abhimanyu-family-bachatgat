@@ -142,6 +142,8 @@ const MR = {
   "You can change your vote until the treasurer decides.": "खजिनदार निर्णय घेईपर्यंत तुम्ही मत बदलू शकता.",
   "Your initials will show instead.": "त्याऐवजी तुमची आद्याक्षरे दिसतील.",
   "Yes, remove": "होय, काढा",
+  'Sent on': 'पाठवले',
+  'day left': 'दिवस बाकी',
   'Install the Bachat Gat app on your phone': 'बचत गट ॲप फोनवर इंस्टॉल करा', Install: 'इंस्टॉल', 'Open Monthly Sheet': 'मासिक शीट उघडा',
 };
 

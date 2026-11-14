@@ -162,3 +162,5 @@ Press this only after the full amount has reached the member. Interest starts fr
 Send this payment for approval?,हे पेमेंट मंजुरीसाठी पाठवायचे?
 "Send only after you have paid this exact amount. The approver will check the money and the screenshot, then approve it.",हीच रक्कम भरल्यानंतरच पाठवा. मंजूर करणारे पैसे आणि स्क्रीनशॉट तपासून मंजूर करतील.
 "Yes, I have paid – Send","होय, मी भरले – पाठवा"
+Paid on,भरल्याची तारीख
+Sent on,पाठवले

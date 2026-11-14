@@ -323,7 +323,9 @@ function bill(d) {
 	const lines = [
 		`<div class="ln"><span>${esc(__("Saving"))}</span><b>${money(tm.saving)}</b></div>`,
 		tm.interest ? `<div class="ln"><span>${esc(__("Loan interest"))}</span><b>${money(tm.interest)}</b></div>` : "",
+		tm.emi ? `<div class="ln"><span>${esc(__("EMI"))}</span><b>${money(tm.emi)}</b></div>` : "",
 		tm.fine ? `<div class="ln fine"><span>${esc(__("Late fine"))}</span><b>${money(tm.fine)}</b></div>` : "",
+		tm.payment_date ? `<div class="ln"><span>${esc(tm.status === "Paid" ? __("Paid on") : __("Sent on"))}</span><b>${esc(user_date(tm.payment_date))}</b></div>` : "",
 	].join("");
 	const button =
 		tm.status === "Pending"

@@ -65,12 +65,17 @@ const cards = computed(() => {
         <template v-if="tm">
           <div class="amount">{{ rupee(tm.amount) }}</div>
           <div class="parts">
-            {{ t('Saving') }} {{ rupee(tm.saving) }}<template v-if="tm.interest"> + {{ t('Interest') }} {{ rupee(tm.interest) }}</template><template v-if="tm.fine"> + {{ t('Fine') }} {{ rupee(tm.fine) }}</template>
+            {{ t('Saving') }} {{ rupee(tm.saving) }}<template v-if="tm.interest"> + {{ t('Interest') }} {{ rupee(tm.interest) }}</template><template v-if="tm.emi"> + EMI {{ rupee(tm.emi) }}</template><template v-if="tm.fine"> + {{ t('Fine') }} {{ rupee(tm.fine) }}</template>
           </div>
         </template>
-        <div class="due" :class="{ late }">
+        <div v-if="tm && tm.status !== 'Pending'" class="due">
           <Icon name="calendar" :size="15" />
-          <span v-if="d.days_to_due > 0">{{ t('Last date') }} {{ day(d.due_date) }} · {{ d.days_to_due }} {{ t('days left') }}</span>
+          <span v-if="tm.status === 'Paid'">✓ {{ t('Paid on') }} {{ day(tm.payment_date) }} · {{ t('Approved') }}</span>
+          <span v-else>{{ t('Sent on') }} {{ day(tm.payment_date) }} · {{ t('Waiting for approval') }}</span>
+        </div>
+        <div v-else class="due" :class="{ late }">
+          <Icon name="calendar" :size="15" />
+          <span v-if="d.days_to_due > 0">{{ t('Last date') }} {{ day(d.due_date) }} · {{ d.days_to_due }} {{ t(d.days_to_due === 1 ? 'day left' : 'days left') }}</span>
           <span v-else-if="d.days_to_due === 0">{{ t('Today is the last date') }}</span>
           <span v-else>{{ t('Last date') }} {{ day(d.due_date) }} · {{ t('Fine is running') }}</span>
         </div>
