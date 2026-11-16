@@ -173,3 +173,36 @@ def approve_row(payment):
 	"""Approve a payment a member entered (checks done by the approver looking at the screenshot)."""
 	frappe.only_for(("Khajinadar", "System Manager"))
 	frappe.get_doc("Monthly Payment", payment).submit()
+
+
+@frappe.whitelist()
+def month_summary(month=None):
+	"""Group totals at the end of a month, the "Total Summary" card shared on the WhatsApp group:
+	what came in (shares, interest, penalty) equals where it is (loans out, cash, expenses)."""
+	s = get_settings()
+	month = get_first_day(month or today())
+	end = add_months(month, 1)
+
+	def total(sql, *args):
+		return flt(frappe.db.sql(sql, args)[0][0])
+
+	paid = "from `tabMonthly Payment` where docstatus=1 and month < %s"
+	shares = total(f"select sum(saving) {paid}", end)
+	interest = total(f"select sum(interest) {paid}", end)
+	fine = total(f"select sum(fine) {paid}", end)
+	repaid = total(f"select sum(principal) {paid}", end)
+	given = total("select sum(amount) from tabLoan where docstatus=1 and disbursed_on < %s", end)
+	from_cash = total("select sum(amount) from tabLoan where docstatus=1 and disbursed_on < %s and is_opening=0", end)
+	expense = total("select sum(amount) from `tabGroup Expense` where date < %s", end)
+	exits = total("select sum(payable) from `tabMember Exit` where docstatus=1 and exit_date < %s", end)
+	opening_savings = total("select sum(opening_savings) from tabMember")
+	return {
+		"month": month,
+		"shares": shares + opening_savings,
+		"interest": interest + flt(s.opening_earnings),
+		"fine": fine,
+		"loan": given - repaid,
+		"cash": flt(s.opening_cash) + shares + interest + fine + repaid - from_cash - expense - exits,
+		"expense": expense,
+		"exits": exits,
+	}

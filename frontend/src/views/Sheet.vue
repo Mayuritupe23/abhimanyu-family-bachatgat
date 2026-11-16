@@ -6,7 +6,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import Icon from '../components/Icon.vue';
 import { m } from '../api.js';
-import { pdfBlob, yearSpecs, demandSpec, imageBlob, saveFile, shareImage, statementSpec, xlsxBlob } from '../sheetExport.js';
+import { pdfBlob, yearSpecs, demandSpec, imageBlob, saveFile, shareImage, statementSpec, summarySpec, xlsxBlob } from '../sheetExport.js';
 import { t } from '../i18n.js';
 import { monthName, rupee, todayISO } from '../util.js';
 
@@ -70,8 +70,13 @@ async function openView(which, at = month.value) {
     } catch (e) { error.value = e.message; } finally { busyYear.value = false; }
     return;
   }
-  const specs = which === 'month' ? [demandSpec(d.value), statementSpec(d.value)]
-    : [tab.value === 'statement' ? statementSpec(d.value) : demandSpec(d.value)];
+  let specs;
+  try {
+    // month-end: Paise Bharna + Statement + the Total Summary card
+    const total = which === 'one' ? null : summarySpec(await m('month_summary', { month: d.value.month }));
+    specs = which === 'summary' ? [total] : which === 'month' ? [demandSpec(d.value), statementSpec(d.value), total]
+      : [tab.value === 'statement' ? statementSpec(d.value) : demandSpec(d.value)];
+  } catch (e) { error.value = e.message; return; }
   const name = which === 'month' ? `gat-${d.value.month.slice(0, 7)}` : specs[0].file;
   view.value = { specs, name, url: URL.createObjectURL(await imageBlob(specs)) };
 }
@@ -119,6 +124,7 @@ const notPaid = computed(() => rows.value.filter((r) => !paid(r)).map((r) => r.m
       <button class="ex month" @click="openView('month')"><Icon name="table" :size="18" />{{ t('Whole month') }}</button>
       <button class="ex year" :disabled="busyYear" @click="openView('year')"><Icon name="table" :size="18" />{{ busyYear ? '…' : t('Whole year') }}</button>
     </div>
+    <button v-if="d" class="ex total" @click="openView('summary')"><Icon name="table" :size="18" />{{ t('Total Summary') }} · {{ monthName(month) }}</button>
 
     <div v-if="view" class="viewer" @click.self="closeView">
       <div class="vbox">
@@ -196,6 +202,7 @@ const notPaid = computed(() => rows.value.filter((r) => !paid(r)).map((r) => r.m
 .ex:disabled { opacity: .5; }
 .ex.pdf { background: #b91c1c; border-color: #b91c1c; color: #fff; }
 .ex.year { background: #b45309; border-color: #b45309; color: #fff; }
+.ex.total { background: #0b3356; border-color: #0b3356; color: #fff; padding: 12px; }
 .ex.month { background: #14532d; border-color: #14532d; color: #fff; }
 .viewer { position: fixed; inset: 0; z-index: 50; background: rgba(15,23,42,.6); display: flex; align-items: center; justify-content: center; padding: 12px; }
 .vbox { background: #fff; border-radius: 18px; width: 100%; max-width: 760px; max-height: 100%; display: flex; flex-direction: column; gap: 10px; padding: 12px; }

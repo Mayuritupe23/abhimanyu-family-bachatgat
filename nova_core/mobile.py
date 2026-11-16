@@ -422,3 +422,10 @@ def set_photo(file_url=None):
 	"""Set or remove the member's own profile photo."""
 	frappe.db.set_value("User", frappe.session.user, "user_image", file_url or None)
 	return file_url
+
+
+@frappe.whitelist()
+def month_summary(month=None):
+	from nova_core.monthly import month_summary
+
+	return month_summary(month)

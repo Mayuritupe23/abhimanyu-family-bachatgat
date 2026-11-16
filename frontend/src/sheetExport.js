@@ -78,7 +78,73 @@ export function yearSpecs(y) {
   return [summary, ...months];
 }
 
+// month-end "Total Summary" card: what came in = where the money is
+export function summarySpec(t) {
+  const m = parse(t.month);
+  const left = t.shares + t.interest + t.fine;
+  const right = t.loan + t.cash + t.expense + t.exits;
+  const rows = [['TOTAL SHARES', t.shares, 'LOAN', t.loan], ['INTEREST', t.interest, 'CASH IN HAND', t.cash],
+    ['PENALTY', t.fine, 'EXPENSES', t.expense]];
+  if (t.exits) rows.push(['', '', 'MEMBER EXIT', t.exits]);
+  return {
+    card: true,
+    file: `total-summary-${String(t.month).slice(0, 7)}`,
+    sheet: 'Total Summary',
+    title: 'TOTAL SUMMARY',
+    subtitle: `MONTH OF ${EN_MONTHS[m.getMonth()]} ${m.getFullYear()}`,
+    cols: [['IN', 'l', 190], ['AMOUNT', 'r', 150], ['WHERE IT IS', 'l', 190], ['AMOUNT', 'r', 150]],
+    rows,
+    total: ['TOTAL', left, 'TOTAL', right],
+    note: left === right ? 'Both totals match ✔' : `Difference ${num(left - right)}`,
+  };
+}
+
+function drawCard(spec) {
+  const S = 2, W = 760, pad = 40, rowH = 84, cw = (W - pad * 2) / 4;
+  const top = 190, H = top + rowH * (spec.rows.length + 1) + 50;
+  const cv = document.createElement('canvas');
+  cv.width = W * S;
+  cv.height = H * S;
+  const c = cv.getContext('2d');
+  c.scale(S, S);
+  const font = (s) => `800 ${s}px Inter, Arial, sans-serif`;
+  c.fillStyle = '#ffffff';
+  c.fillRect(0, 0, W, H);
+  c.strokeStyle = '#1f6b3a';
+  c.lineWidth = 5;
+  c.beginPath(); c.roundRect(12, 12, W - 24, H - 24, 14); c.stroke();
+  c.textAlign = 'center';
+  c.fillStyle = '#0b2545'; c.font = font(46); c.fillText(spec.title, W / 2, 92);
+  c.fillStyle = '#1e3a8a'; c.font = font(22); c.fillText(spec.subtitle, W / 2, 132);
+  c.fillStyle = '#e2e8f0'; c.fillRect(pad, 156, W - pad * 2, 3);
+  const label = ['#0b3356', '#1f6b3a', '#a3124a', '#ffffff'];
+  const light = ['#e2e8f0', '#d1fae5', '#fbcfe8', '#e2e8f0'];
+  const cell = (x, y, w, bg, text, color, align) => {
+    c.fillStyle = bg; c.fillRect(x, y, w, rowH);
+    c.strokeStyle = '#0b2545'; c.lineWidth = 2; c.strokeRect(x, y, w, rowH);
+    if (text === '' || text == null) return;
+    c.fillStyle = color; c.font = font(24);
+    const lines = typeof text === 'number' ? [num(text)] : String(text).split(' ').length > 1 && String(text).length > 10 ? String(text).split(/ (.+)/).filter(Boolean) : [String(text)];
+    c.textAlign = align;
+    const tx = align === 'right' ? x + w - 18 : align === 'center' ? x + w / 2 : x + 18;
+    lines.forEach((l, i) => c.fillText(l, tx, y + rowH / 2 + 9 + (i - (lines.length - 1) / 2) * 28));
+  };
+  let y = top;
+  spec.rows.forEach((r, i) => {
+    const lbg = label[i] || '#ffffff', vbg = i === 0 ? '#e2e8f0' : light[i] || '#ffffff';
+    cell(pad, y, cw, r[0] ? lbg : '#ffffff', r[0], '#ffffff', 'left');
+    cell(pad + cw, y, cw, r[0] ? '#e2e8f0' : '#ffffff', r[1], '#000000', 'right');
+    cell(pad + cw * 2, y, cw, vbg, r[2], '#0b3356', 'left');
+    cell(pad + cw * 3, y, cw, vbg, r[3], '#000000', 'right');
+    y += rowH;
+  });
+  cell(pad, y, cw * 2, '#e6b00a', spec.total[1], '#000000', 'center');
+  cell(pad + cw * 2, y, cw * 2, '#e6b00a', spec.total[3], '#000000', 'center');
+  return cv;
+}
+
 export function drawSheet(spec) {
+  if (spec.card) return drawCard(spec);
   const S = 2; // sharp on phones
   const pad = 28, rowH = 34, headH = 40;
   const width = spec.cols.reduce((a, c) => a + c[2], 0) + pad * 2;
