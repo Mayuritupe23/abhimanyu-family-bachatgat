@@ -123,8 +123,8 @@ const notPaid = computed(() => rows.value.filter((r) => !paid(r)).map((r) => r.m
       <button class="ex" @click="openView('one')"><Icon name="image" :size="18" />{{ t('View sheet') }}</button>
       <button class="ex month" @click="openView('month')"><Icon name="table" :size="18" />{{ t('Whole month') }}</button>
       <button class="ex year" :disabled="busyYear" @click="openView('year')"><Icon name="table" :size="18" />{{ busyYear ? '…' : t('Whole year') }}</button>
+      <button class="ex total" @click="openView('summary')"><Icon name="table" :size="18" />{{ t('Total Summary') }}</button>
     </div>
-    <button v-if="d" class="ex total" @click="openView('summary')"><Icon name="table" :size="18" />{{ t('Total Summary') }} · {{ monthName(month) }}</button>
 
     <div v-if="view" class="viewer" @click.self="closeView">
       <div class="vbox">
@@ -133,7 +133,7 @@ const notPaid = computed(() => rows.value.filter((r) => !paid(r)).map((r) => r.m
         <select v-if="view.year" class="input" :value="view.picked" :disabled="busyYear" @change="openView('year', $event.target.value)">
           <option v-for="y in view.years" :key="y" :value="String(y).slice(0, 10)">{{ yearLabel(y) }}</option>
         </select>
-        <div class="vimg"><img :src="view.url" alt=""></div>
+        <div class="vimg"><img :src="view.url" alt="" :class="{ fit: view.specs.length === 1 && view.specs[0].card }"></div>
         <p v-if="view.year" class="muted small note">{{ t('PDF and Excel have the year total and every month.') }}</p>
         <div class="exports">
           <button v-if="canShare" class="ex share" :disabled="!!busyExport" @click="exportAs('share')"><Icon name="share" :size="18" />{{ t('Share') }}</button>
@@ -195,20 +195,23 @@ const notPaid = computed(() => rows.value.filter((r) => !paid(r)).map((r) => r.m
 .seg button { border: 0; background: none; border-radius: 10px; padding: 10px; font-weight: 800; color: var(--muted); }
 .seg button.on { background: #14532d; color: #fff; }
 .note { margin: 0 2px; }
-.exports { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 8px; }
+.exports { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.exports .ex:last-child:nth-child(odd) { grid-column: span 2; } /* no Share on a computer: 3 buttons */
+@media (min-width: 600px) { .exports { grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); } .exports .ex:last-child:nth-child(odd) { grid-column: auto; } }
 .ex { display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--line); background: #fff; border-radius: 12px;
-  padding: 10px 6px; font-weight: 800; font-size: 13px; color: var(--ink); }
+  padding: 12px 8px; font-weight: 800; font-size: 14px; color: var(--ink); white-space: nowrap; min-width: 0; }
 .ex.share { background: #25d366; border-color: #25d366; color: #fff; }
 .ex:disabled { opacity: .5; }
 .ex.pdf { background: #b91c1c; border-color: #b91c1c; color: #fff; }
 .ex.year { background: #b45309; border-color: #b45309; color: #fff; }
-.ex.total { background: #0b3356; border-color: #0b3356; color: #fff; padding: 12px; }
+.ex.total { background: #0b3356; border-color: #0b3356; color: #fff; }
 .ex.month { background: #14532d; border-color: #14532d; color: #fff; }
 .viewer { position: fixed; inset: 0; z-index: 50; background: rgba(15,23,42,.6); display: flex; align-items: center; justify-content: center; padding: 12px; }
 .vbox { background: #fff; border-radius: 18px; width: 100%; max-width: 760px; max-height: 100%; display: flex; flex-direction: column; gap: 10px; padding: 12px; }
 .vhead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .vimg { overflow: auto; border: 1px solid var(--line); border-radius: 12px; flex: 1; min-height: 0; }
 .vimg img { display: block; width: 100%; min-width: 560px; }
+.vimg img.fit { min-width: 0; } /* the summary card is shaped for a phone; the wide sheets scroll */
 .ok { color: var(--g2); font-weight: 700; }
 .tablewrap { padding: 0; overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; font-size: 12.5px; white-space: nowrap; }
