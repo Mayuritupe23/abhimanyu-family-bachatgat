@@ -33,7 +33,7 @@ export function statementSpec(d) {
   // only approved payments count; a sent-but-not-approved one shows as not paid yet
   const rows = d.rows.map((r) => {
     const ok = r.state === 'paid';
-    return [r.no, r.member_name, ok ? r.saving : 0, r.loan, ok ? r.interest : 0, ok ? r.emi : 0, ok ? r.fine : 0, ok ? r.total : 0, ok ? r.balance : r.loan];
+    return [r.no, r.member_name, ok ? r.saving : 0, r.loan, ok ? r.interest : 0, ok ? r.emi : 0, ok ? r.fine : 0, ok ? r.total : 0, r.balance];
   });
   const sum = (i) => rows.reduce((a, r) => a + (+r[i] || 0), 0);
   const unpaid = d.rows.filter((r) => r.state !== 'paid').map((r) => r.member_name);
@@ -58,7 +58,7 @@ export function yearSpecs(y) {
     const ok = r.state === 'paid';
     const m = byMember.get(r.member) || { name: r.member_name, shares: 0, interest: 0, emi: 0, fine: 0, total: 0, months: 0, balance: 0 };
     if (ok) { m.shares += r.saving; m.interest += r.interest; m.emi += r.emi; m.fine += r.fine; m.total += r.total; m.months += 1; }
-    m.balance = ok ? r.balance : r.loan; // loan left after the last month in the list
+    m.balance = r.balance; // loan left after the last month in the list
     byMember.set(r.member, m);
   }));
   const rows = [...byMember.values()].map((m, i) => [i + 1, m.name, m.months, m.shares, m.interest, m.emi, m.fine, m.total, m.balance]);

@@ -232,7 +232,7 @@ class GatMonthly {
 		const rows = d.rows.map((r) => {
 			const ok = r.state === "paid";
 			return [r.no, r.member_name, ok ? r.saving : 0, r.loan, ok ? r.interest : 0,
-				ok ? r.emi : 0, ok ? r.fine : 0, ok ? r.total : 0, ok ? r.balance : r.loan];
+				ok ? r.emi : 0, ok ? r.fine : 0, ok ? r.total : 0, r.balance];
 		});
 		const sum = (i) => rows.reduce((a, r) => a + (+r[i] || 0), 0);
 		const unpaid = d.rows.filter((r) => r.state !== "paid").map((r) => r.member_name);
@@ -412,7 +412,7 @@ class GatMonthly {
 				const m = by.get(r.member) || { name: r.member_name, shares: 0, interest: 0, emi: 0, fine: 0, total: 0, months: 0, balance: 0 };
 				if (ok) Object.assign(m, { shares: m.shares + r.saving, interest: m.interest + r.interest, emi: m.emi + r.emi,
 					fine: m.fine + r.fine, total: m.total + r.total, months: m.months + 1 });
-				m.balance = ok ? r.balance : r.loan; // loan left after the last month in the list
+				m.balance = r.balance; // loan left after the last month in the list
 				by.set(r.member, m);
 			})
 		);

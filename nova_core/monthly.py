@@ -50,6 +50,15 @@ def get_sheet(month=None):
 	):
 		opening_rows[r.parent] = opening_rows.get(r.parent, 0) + flt(r.outstanding)
 
+	# loans paid out during this month: no interest yet, but they are in the loan left at month end
+	given = {}
+	for ln in frappe.get_all(
+		"Loan",
+		filters=[["docstatus", "=", 1], ["disbursed_on", ">=", month], ["disbursed_on", "<", next_month]],
+		fields=["member", "amount"],
+	):
+		given[ln.member] = given.get(ln.member, 0) + flt(ln.amount)
+
 	rows = []
 	for i, m in enumerate(members, 1):
 		p = payments.get(m.name)
@@ -71,7 +80,8 @@ def get_sheet(month=None):
 		row.update(
 			no=i, member=m.name, member_name=m.member_name, loan=opening, extra=extra,
 			extra_waiting=extra_waiting.get(m.name, []),
-			emi=row["emi"] + extra, total=row["total"] + extra, balance=opening - row["emi"] - extra,
+			emi=row["emi"] + extra, total=row["total"] + extra, new_loan=given.get(m.name, 0),
+			balance=opening - row["emi"] - extra + given.get(m.name, 0),
 		)
 		rows.append(row)
 

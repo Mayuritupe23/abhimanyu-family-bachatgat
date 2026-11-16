@@ -51,7 +51,7 @@ const stTotals = computed(() => {
     shares: p.reduce((a, r) => a + r.saving, 0), loan: rows.value.reduce((a, r) => a + r.loan, 0),
     interest: p.reduce((a, r) => a + r.interest, 0), emi: p.reduce((a, r) => a + r.emi, 0),
     fine: p.reduce((a, r) => a + r.fine, 0), total: p.reduce((a, r) => a + r.total, 0),
-    balance: rows.value.reduce((a, r) => a + (paid(r) ? r.balance : r.loan), 0),
+    balance: rows.value.reduce((a, r) => a + r.balance, 0),
   };
 });
 // open the sheet as a picture first; download / share only from there
@@ -174,7 +174,7 @@ const notPaid = computed(() => rows.value.filter((r) => !paid(r)).map((r) => r.m
               <td class="name">{{ r.member_name }}</td>
               <td>{{ paid(r) ? n(r.saving) : '—' }}</td><td>{{ n(r.loan) }}</td><td>{{ paid(r) ? n(r.interest) : '—' }}</td>
               <td>{{ paid(r) ? n(r.emi) : '—' }}</td><td :class="{ red: r.fine }">{{ paid(r) ? n(r.fine) : '—' }}</td>
-              <td class="b">{{ paid(r) ? n(r.total) : '—' }}</td><td :class="{ blue: paid(r) ? r.balance : r.loan }">{{ n(paid(r) ? r.balance : r.loan) }}</td>
+              <td class="b">{{ paid(r) ? n(r.total) : '—' }}</td><td :class="{ blue: r.balance }">{{ nr.balance }}</td>
             </tr>
           </tbody>
           <tfoot><tr><td class="name">{{ t('Total') }}</td><td>{{ n(stTotals.shares) }}</td><td>{{ n(stTotals.loan) }}</td><td>{{ n(stTotals.interest) }}</td><td>{{ n(stTotals.emi) }}</td><td>{{ n(stTotals.fine) }}</td><td>{{ n(stTotals.total) }}</td><td>{{ n(stTotals.balance) }}</td></tr></tfoot>
