@@ -293,18 +293,20 @@ export function saveFile(blob, name) {
   setTimeout(() => URL.revokeObjectURL(a.href), 1500);
 }
 
-// phone share sheet (WhatsApp, Drive...) when the browser can share files, else a plain download
+// phone share sheet (WhatsApp, Drive...) when the browser can share files, else a plain download.
+// Each sheet goes as its own picture: one tall stacked picture gets shrunk by WhatsApp and looks blurred.
 export async function shareImage(spec, name) {
-  const blob = await imageBlob(spec);
-  const file = new File([blob], `${name}.png`, { type: 'image/png' });
-  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+  const specs = list(spec);
+  const blobs = await Promise.all(specs.map((x) => new Promise((ok) => drawSheet(x).toBlob(ok, 'image/png'))));
+  const files = blobs.map((b, i) => new File([b], `${specs.length > 1 ? specs[i].file : name}.png`, { type: 'image/png' }));
+  if (navigator.canShare && navigator.canShare({ files })) {
     try {
-      await navigator.share({ files: [file], title: name });
+      await navigator.share({ files, title: name });
       return 'shared';
     } catch (e) {
       if (e.name === 'AbortError') return 'cancelled';
     }
   }
-  saveFile(blob, file.name);
+  saveFile(await imageBlob(specs), `${name}.png`);
   return 'downloaded';
 }
