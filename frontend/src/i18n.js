@@ -92,7 +92,7 @@ const MR = {
   'Remove profile photo?': 'प्रोफाइल फोटो काढायचा?', 'Uploading…': 'अपलोड होत आहे…', 'Tap the photo to change it': 'बदलण्यासाठी फोटोवर टॅप करा',
   'Tap the circle to add your photo': 'फोटो जोडण्यासाठी गोलावर टॅप करा', Remove: 'काढा',
   Adhyaksh: 'अध्यक्ष', Upadhyaksh: 'उपाध्यक्ष', Sachiv: 'सचिव', Sahsachiv: 'सहसचिव', Khajinadar: 'खजिनदार', Member: 'सभासद', Shareholder: 'भागधारक',
-  Share: 'शेअर', Image: 'इमेज', 'Add bill photo / screenshot (optional)': 'बिलाचा फोटो / स्क्रीनशॉट जोडा (ऐच्छिक)', Bill: 'बिल', 'View sheet': 'शीट पहा', 'Whole month': 'पूर्ण महिना', 'Whole year': 'पूर्ण वर्ष', 'Total Summary': 'एकूण हिशोब', 'Change screenshot': 'स्क्रीनशॉट बदला', 'Add loan money screenshot': 'कर्ज दिल्याचा स्क्रीनशॉट जोडा', 'PDF and Excel have the year total and every month.': 'PDF आणि एक्सेलमध्ये वर्षाचा एकूण हिशोब आणि प्रत्येक महिना आहे.', 'Download image': 'इमेज डाउनलोड',
+  Share: 'शेअर', Image: 'इमेज', 'Add bill photo / screenshot (optional)': 'बिलाचा फोटो / स्क्रीनशॉट जोडा (ऐच्छिक)', Bill: 'बिल', 'View sheet': 'शीट पहा', 'Whole month': 'पूर्ण महिना', 'Whole year': 'पूर्ण वर्ष', 'Total Summary': 'एकूण हिशोब', 'Change screenshot': 'स्क्रीनशॉट बदला', 'Add loan money screenshot': 'कर्ज दिल्याचा स्क्रीनशॉट जोडा', 'Add one more screenshot': 'आणखी एक स्क्रीनशॉट जोडा', 'PDF and Excel have the year total and every month.': 'PDF आणि एक्सेलमध्ये वर्षाचा एकूण हिशोब आणि प्रत्येक महिना आहे.', 'Download image': 'इमेज डाउनलोड',
   "Loan amount": "कर्जाची रक्कम",
   "Votes": "मते",
   "Approve this loan?": "हे कर्ज मंजूर करायचे?",

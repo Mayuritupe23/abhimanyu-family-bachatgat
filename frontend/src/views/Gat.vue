@@ -78,9 +78,18 @@ async function giveMoney(l, e) {
   });
   if (ok) await sendProof('disburse_loan', l, files);
 }
-async function sendProof(fn, l, files) {
+// add = keep the screenshot already there and put the new ones below it (second part sent later)
+async function sendProof(fn, l, files, add = false) {
   busy.value = l.name;
-  try { await loanAct(fn, l, { proof: await upload(await joinImages(files)) }); } catch (err) { error.value = err.message; busy.value = ''; }
+  try {
+    if (add && l.proof) files = [await (await fetch(l.proof)).blob(), ...files];
+    await loanAct(fn, l, { proof: await upload(await joinImages(files)) });
+  } catch (err) { error.value = err.message; busy.value = ''; }
+}
+function pickProof(l, e, add) {
+  const files = [...e.target.files];
+  e.target.value = '';
+  if (files.length) sendProof('loan_proof', l, files, add);
 }
 const collected = computed(() => paid.value.reduce((a, r) => a + r.total, 0));
 const shown = computed(() => ({ sent: sent.value, pending: pending.value, paid: paid.value }[filter.value] || []));
@@ -277,9 +286,14 @@ async function markPaid(r) {
             <b>{{ rupee(l.outstanding) }}</b>
           </div>
           <img v-if="l.proof" :src="l.proof" class="shot" :class="{ open: big === l.name }" alt="" @click="big = big === l.name ? '' : l.name" />
-          <label class="proof muted small" :class="{ off: busy === l.name }">📎 {{ t(l.proof ? 'Change screenshot' : 'Add loan money screenshot') }}
-            <input type="file" accept="image/*" multiple hidden :disabled="busy === l.name" @change="(e) => { const f = [...e.target.files]; e.target.value = ''; f.length && sendProof('loan_proof', l, f); }" />
-          </label>
+          <div class="proofs">
+            <label v-if="l.proof" class="proof muted small" :class="{ off: busy === l.name }">➕ {{ t('Add one more screenshot') }}
+              <input type="file" accept="image/*" multiple hidden @change="(e) => pickProof(l, e, true)" />
+            </label>
+            <label class="proof muted small" :class="{ off: busy === l.name }">📎 {{ t(l.proof ? 'Change screenshot' : 'Add loan money screenshot') }}
+              <input type="file" accept="image/*" multiple hidden @change="(e) => pickProof(l, e, false)" />
+            </label>
+          </div>
         </article>
       </template>
 
@@ -313,6 +327,7 @@ async function markPaid(r) {
 .acts { display: grid; grid-template-columns: 1fr 1.3fr; gap: 10px; margin-top: 12px; }
 .acts .btn { width: 100%; }
 label.give { display: block; text-align: center; cursor: pointer; }
+.proofs { display: flex; flex-wrap: wrap; gap: 4px 16px; }
 .proof { display: block; margin-top: 8px; cursor: pointer; text-decoration: underline; }
 .off { opacity: .5; pointer-events: none; }
 .wa { background: #25d366; box-shadow: none; }
