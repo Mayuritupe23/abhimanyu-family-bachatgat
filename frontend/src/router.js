@@ -35,4 +35,15 @@ document.addEventListener('visibilitychange', async () => {
   if (!store.boot && router.currentRoute.value.name !== 'login') router.replace({ name: 'login' });
 });
 
+// after an app update the old page asks for screen files that no longer exist: load the new app once, then open the screen
+router.onError((err, to) => {
+  if (!/dynamically imported module|Importing a module script|Failed to fetch|Unable to preload/i.test(String(err?.message))) return;
+  try {
+    if (sessionStorage.getItem('reloaded-for') === to.fullPath) return;
+    sessionStorage.setItem('reloaded-for', to.fullPath);
+  } catch { /* no storage: still reload once */ }
+  location.assign('/afbg' + to.fullPath);
+});
+router.afterEach(() => { try { sessionStorage.removeItem('reloaded-for'); } catch { /* ignore */ } });
+
 export default router;
