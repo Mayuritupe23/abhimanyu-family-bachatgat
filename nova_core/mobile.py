@@ -298,7 +298,7 @@ def gat_loans():
 	rows = frappe.get_all(
 		"Loan",
 		filters={"docstatus": 1, "status": ["in", ["Applied", "Approved", "Active"]]},
-		fields=["name", "member", "member_name", "amount", "outstanding", "status", "purpose", "application_date", "disbursed_on", "due_date"],
+		fields=["name", "member", "member_name", "amount", "outstanding", "status", "purpose", "application_date", "disbursed_on", "due_date", "proof"],
 		order_by="application_date",
 	)
 	members = frappe.db.count("Member", {"status": "Active"})
@@ -319,10 +319,18 @@ def decide_loan(loan, status):
 
 
 @frappe.whitelist()
-def disburse_loan(loan):
+def disburse_loan(loan, proof=None):
 	from nova_core.nova_core.doctype.loan.loan import disburse
 
-	disburse(loan)
+	disburse(loan, proof)
+	return gat_loans()
+
+
+@frappe.whitelist()
+def loan_proof(loan, proof):
+	from nova_core.nova_core.doctype.loan.loan import set_proof
+
+	set_proof(loan, proof)
 	return gat_loans()
 
 

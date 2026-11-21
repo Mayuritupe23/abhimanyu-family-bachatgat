@@ -48,15 +48,30 @@ frappe.ui.form.on("Loan", {
 		}
 		if (frm.doc.status === "Approved" && frappe.user.has_role(["Khajinadar", "System Manager"])) {
 			frm.add_custom_button(__("Disburse"), () =>
-				gat.confirm({
-					title: __("Has the loan money been given?"),
-					lines: [[__("Member"), frm.doc.member_name], [__("Loan amount"), format_currency(frm.doc.amount)], [__("Date"), frappe.datetime.str_to_user(frappe.datetime.get_today())]],
-					note: __("Press this only after the full amount has reached the member. Interest starts from next month and the loan must be closed within 10 months."),
-					ok: __("Yes, money given"),
-				}).then((ok) => ok && frappe
-					.xcall("nova_core.nova_core.doctype.loan.loan.disburse", { loan: frm.doc.name })
-					.then(() => frm.reload_doc()))
+				// the UPI screenshot of the loan money is the proof, asked first
+				frappe.prompt(
+					{ fieldtype: "Attach Image", fieldname: "proof", label: __("Money Given Screenshot"), reqd: 1 },
+					({ proof }) => gat.confirm({
+						title: __("Has the loan money been given?"),
+						lines: [[__("Member"), frm.doc.member_name], [__("Loan amount"), format_currency(frm.doc.amount)], [__("Date"), frappe.datetime.str_to_user(frappe.datetime.get_today())]],
+						note: __("Press this only after the full amount has reached the member. Interest starts from next month and the loan must be closed within 10 months."),
+						ok: __("Yes, money given"),
+					}).then((ok) => ok && frappe
+						.xcall("nova_core.nova_core.doctype.loan.loan.disburse", { loan: frm.doc.name, proof })
+						.then(() => frm.reload_doc())),
+					__("Disburse"), __("Next")
+				)
 			).addClass("btn-primary");
+		}
+		if (["Active", "Closed"].includes(frm.doc.status) && frappe.user.has_role(["Khajinadar", "System Manager"])) {
+			frm.add_custom_button(frm.doc.proof ? __("Change Screenshot") : __("Add Money Given Screenshot"), () =>
+				frappe.prompt(
+					{ fieldtype: "Attach Image", fieldname: "proof", label: __("Money Given Screenshot"), reqd: 1 },
+					({ proof }) => frappe
+						.xcall("nova_core.nova_core.doctype.loan.loan.set_proof", { loan: frm.doc.name, proof })
+						.then(() => frm.reload_doc())
+				)
+			);
 		}
 	},
 });

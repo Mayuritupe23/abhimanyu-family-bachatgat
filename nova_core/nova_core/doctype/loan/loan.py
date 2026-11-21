@@ -100,8 +100,10 @@ def decide(loan, status):
 
 
 @frappe.whitelist()
-def disburse(loan):
+def disburse(loan, proof=None):
 	frappe.only_for(("Khajinadar", "System Manager"))
+	if not proof:
+		frappe.throw(_("Please attach the screenshot of the loan money sent"))
 	doc = frappe.get_doc("Loan", loan)
 	if doc.status != "Approved":
 		frappe.throw(_("Only approved loans can be disbursed"))
@@ -112,7 +114,20 @@ def disburse(loan):
 			disbursed_on=today(),
 			due_date=add_months(today(), get_settings().loan_tenure_months),
 			outstanding=doc.amount,
+			proof=proof,
 		)
 	)
+	doc.flags.via_gat_action = True
+	doc.save(ignore_permissions=True)
+
+
+@frappe.whitelist()
+def set_proof(loan, proof):
+	"""Add or change the money-given screenshot of a loan already paid out."""
+	frappe.only_for(("Khajinadar", "System Manager"))
+	doc = frappe.get_doc("Loan", loan)
+	if doc.status not in ("Active", "Closed") or not proof:
+		frappe.throw(_("Only a loan already given can get a screenshot"))
+	doc.proof = proof
 	doc.flags.via_gat_action = True
 	doc.save(ignore_permissions=True)

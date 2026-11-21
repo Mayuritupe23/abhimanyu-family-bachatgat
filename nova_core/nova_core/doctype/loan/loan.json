@@ -18,6 +18,7 @@
   "status",
   "application_date",
   "disbursed_on",
+  "proof",
   "due_date",
   "outstanding",
   "sb_votes",
@@ -84,6 +85,14 @@
   },
   {
    "allow_on_submit": 1,
+   "description": "Screenshot of the loan money sent to the member",
+   "fieldname": "proof",
+   "fieldtype": "Attach Image",
+   "label": "Money Given Screenshot",
+   "read_only": 1
+  },
+  {
+   "allow_on_submit": 1,
    "fieldname": "due_date",
    "fieldtype": "Date",
    "in_list_view": 1,
@@ -139,7 +148,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-11-03 18:00:00.000000",
+ "modified": "2026-11-21 16:30:00.000000",
  "modified_by": "Administrator",
  "module": "Nova Core",
  "name": "Loan",
