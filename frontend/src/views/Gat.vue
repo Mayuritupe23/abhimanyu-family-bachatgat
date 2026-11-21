@@ -3,7 +3,7 @@
 import { computed, onMounted, ref } from 'vue';
 import Avatar from '../components/Avatar.vue';
 import Icon from '../components/Icon.vue';
-import { m, shrink, upload } from '../api.js';
+import { joinImages, m, upload } from '../api.js';
 import { ask } from '../ask.js';
 import { lang, t } from '../i18n.js';
 import { day, monthName, rupee, todayISO } from '../util.js';
@@ -65,21 +65,22 @@ async function decide(l, status) {
   if (ok) loanAct('decide_loan', l, { status });
 }
 // the loan money's UPI screenshot is the proof: picked first, then confirmed
+// more than one screenshot when the money went in parts (15k + 15k)
 async function giveMoney(l, e) {
-  const file = e.target.files[0];
+  const files = [...e.target.files];
   e.target.value = '';
-  if (!file) return;
+  if (!files.length) return;
   const ok = await ask({
     title: t('Has the loan money been given?'),
-    lines: [[t('Member'), l.member_name], [t('Loan amount'), rupee(l.amount)], [t('Date'), day(todayISO())], [t('Screenshot'), '✔']],
+    lines: [[t('Member'), l.member_name], [t('Loan amount'), rupee(l.amount)], [t('Date'), day(todayISO())], [t('Screenshot'), `✔ ${files.length}`]],
     note: t('Press this only after the full amount has reached the member. Interest starts from next month and the loan must be closed within 10 months.'),
     ok: t('Yes, money given'),
   });
-  if (ok) await sendProof('disburse_loan', l, file);
+  if (ok) await sendProof('disburse_loan', l, files);
 }
-async function sendProof(fn, l, file) {
+async function sendProof(fn, l, files) {
   busy.value = l.name;
-  try { await loanAct(fn, l, { proof: await upload(await shrink(file)) }); } catch (err) { error.value = err.message; busy.value = ''; }
+  try { await loanAct(fn, l, { proof: await upload(await joinImages(files)) }); } catch (err) { error.value = err.message; busy.value = ''; }
 }
 const collected = computed(() => paid.value.reduce((a, r) => a + r.total, 0));
 const shown = computed(() => ({ sent: sent.value, pending: pending.value, paid: paid.value }[filter.value] || []));
@@ -265,7 +266,7 @@ async function markPaid(r) {
             <button class="btn small" :disabled="busy === l.name" @click="decide(l, 'Approved')">✓ {{ t('Approve') }}</button>
           </div>
           <label v-else class="btn small give" :class="{ off: busy === l.name }">💸 {{ t('Money given') }} · {{ t('Add screenshot') }}
-            <input type="file" accept="image/*" hidden :disabled="busy === l.name" @change="giveMoney(l, $event)" />
+            <input type="file" accept="image/*" multiple hidden :disabled="busy === l.name" @change="giveMoney(l, $event)" />
           </label>
         </article>
         <div v-if="running.length" class="sec"><h2>{{ t('Running loans') }}</h2></div>
@@ -277,7 +278,7 @@ async function markPaid(r) {
           </div>
           <img v-if="l.proof" :src="l.proof" class="shot" :class="{ open: big === l.name }" alt="" @click="big = big === l.name ? '' : l.name" />
           <label class="proof muted small" :class="{ off: busy === l.name }">📎 {{ t(l.proof ? 'Change screenshot' : 'Add loan money screenshot') }}
-            <input type="file" accept="image/*" hidden :disabled="busy === l.name" @change="(e) => { const f = e.target.files[0]; e.target.value = ''; f && sendProof('loan_proof', l, f); }" />
+            <input type="file" accept="image/*" multiple hidden :disabled="busy === l.name" @change="(e) => { const f = [...e.target.files]; e.target.value = ''; f.length && sendProof('loan_proof', l, f); }" />
           </label>
         </article>
       </template>

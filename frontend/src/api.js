@@ -103,3 +103,25 @@ export function shrink(file, max = 1600) {
     img.src = URL.createObjectURL(file);
   });
 }
+
+// several screenshots of one payment (e.g. 30k sent as 15k + 15k) become one tall image, one below the other
+export async function joinImages(files) {
+  if (files.length === 1) return shrink(files[0]);
+  const imgs = await Promise.all(files.map((f) => new Promise((ok, bad) => {
+    const i = new Image();
+    i.onload = () => ok(i);
+    i.onerror = bad;
+    i.src = URL.createObjectURL(f);
+  })));
+  const w = 800, gap = 16;
+  const hs = imgs.map((i) => Math.round(i.height * w / i.width));
+  const c = document.createElement('canvas');
+  c.width = w;
+  c.height = hs.reduce((a, h) => a + h, 0) + gap * (imgs.length - 1);
+  const g = c.getContext('2d');
+  g.fillStyle = '#fff';
+  g.fillRect(0, 0, c.width, c.height);
+  let y = 0;
+  imgs.forEach((i, k) => { g.drawImage(i, 0, y, w, hs[k]); y += hs[k] + gap; URL.revokeObjectURL(i.src); });
+  return new Promise((ok) => c.toBlob((b) => ok(new File([b], 'screenshot.jpg', { type: 'image/jpeg' })), 'image/jpeg', 0.85));
+}
